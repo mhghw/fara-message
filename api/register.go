@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mhghw/fara-message/jwt"
 )
 
 type RegUser struct {
@@ -25,18 +24,17 @@ func Register(c *gin.Context) {
 	var requestBody RegUser
 	err := c.BindJSON(&requestBody)
 	if err != nil {
-
 		log.Print(http.StatusBadRequest, err)
 	}
-	if requestBody.Password == requestBody.ConfirmPassword {
-		token, err := jwt.CreateToken(requestBody.ID)
-		if err != nil {
-			panic("failed to create token")
-		}
-		c.JSON(http.StatusOK, token)
-		fmt.Println(requestBody)
-	} else {
-		c.JSON(http.StatusNotAcceptable, "password does not match")
+	if requestBody.Password != requestBody.ConfirmPassword {
+		c.String(http.StatusBadRequest, "password does not match")
+		return
 	}
+	token, err := CreateJwtToken(requestBody.ID)
+	if err != nil {
+		panic("failed to create token")
+	}
+	c.JSON(http.StatusOK, token)
+	fmt.Println(requestBody)
 
 }

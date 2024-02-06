@@ -1,4 +1,4 @@
-package jwt
+package api
 
 import (
 	"fmt"
@@ -9,14 +9,23 @@ import (
 
 var secretKey = []byte("farawin")
 
-func CreateToken(id string) (string, error) {
+const (
+	TokenExpireTime = "exp"
+	TokenUserId     = "id"
+)
+
+func GetSecretKey() []byte {
+	return secretKey
+}
+
+func CreateJwtToken(userId string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":  id,
-		"exp": time.Now().Add(time.Hour * 24).Unix(),
+		TokenUserId:     userId,
+		TokenExpireTime: time.Now().Add(time.Hour * 24).Unix(),
 	})
 	tokenString, err := token.SignedString(secretKey)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error signing token: %v", err)
 	}
 	return tokenString, nil
 
@@ -24,11 +33,10 @@ func CreateToken(id string) (string, error) {
 
 func ValidateToken(tokenString string) error {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		// _, ok := token.Method.(*jwt.SigningMethodECDSA)
 		return secretKey, nil
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to parse token", err)
 	}
 	if !token.Valid {
 		return fmt.Errorf("invalid token")
