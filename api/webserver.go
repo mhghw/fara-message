@@ -6,11 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func WebServer(port *int) {
-
+func RunWebServer(port *int) error {
 	addr := fmt.Sprintf(":%d", *port)
 	router := gin.Default()
 	router.Use(AuthMiddleware)
 	router.POST("/user/register", Register)
-	router.Run(addr)
+	err := router.Run(addr)
+	return err
 }

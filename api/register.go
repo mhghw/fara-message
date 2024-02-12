@@ -24,17 +24,18 @@ func Register(c *gin.Context) {
 	var requestBody RegUser
 	err := c.BindJSON(&requestBody)
 	if err != nil {
-		log.Print(http.StatusBadRequest, err)
+		log.Print("failed to bind json", err)
+		return
 	}
 	if requestBody.Password != requestBody.ConfirmPassword {
 		c.String(http.StatusBadRequest, "password does not match")
 		return
 	}
-	token, err := CreateJwtToken(requestBody.ID)
+	token, err := CreateJWTToken(requestBody.ID)
 	if err != nil {
-		panic("failed to create token")
+		log.Print("failed to create token")
+		return
 	}
 	c.JSON(http.StatusOK, token)
 	fmt.Println(requestBody)
-
 }
