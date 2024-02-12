@@ -14,10 +14,6 @@ const (
 	TokenUserID     = "id"
 )
 
-func GetSecretKey() []byte {
-	return secretKey
-}
-
 func CreateJWTToken(userID string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		TokenUserID:     userID,

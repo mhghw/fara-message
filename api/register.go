@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type RegUser struct {
+type RegisterForm struct {
 	ID              string `json:"id"`
 	Username        string `json:"username"`
 	FirstName       string `json:"first_name"`
@@ -19,9 +19,9 @@ type RegUser struct {
 	DateOfBirth     string `json:"date_of_birth"`
 }
 
-// handle func for register,receives a json string according to the RegUser struct and generate a JWT with ID parameter
+// handle func for register,receives a json string according to the RegisterForm struct and generate a JWT with ID parameter
 func Register(c *gin.Context) {
-	var requestBody RegUser
+	var requestBody RegisterForm
 	err := c.BindJSON(&requestBody)
 	if err != nil {
 		log.Print("failed to bind json", err)
