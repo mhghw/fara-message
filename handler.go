@@ -1,6 +1,8 @@
-package editUser
+package changePassword
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -9,8 +11,16 @@ import (
 	"github.com/mhghw/fara-message/db"
 )
 
+func hashString(input string) string {
+	hasher := md5.New()
+	hasher.Write([]byte(input))
+	hashedBytes := hasher.Sum(nil)
+	hashedString := hex.EncodeToString(hashedBytes)
+	return hashedString
+}
+
 // suppose users post their usernames to edit information
-func postEdit(c *gin.Context) {
+func changePassword(c *gin.Context) {
 	var username string
 	err := c.BindJSON(&username)
 	if err != nil {
@@ -32,12 +42,19 @@ func postEdit(c *gin.Context) {
 			return
 		}
 		if currentUser.Username == username {
-			fmt.Println("enter new firstname:")
-			fmt.Scan(&currentUser.FirstName)
-			fmt.Println("enter new lastname:")
-			fmt.Scan(&currentUser.LastName)
-			db.UsersDB.UpdateUser(currentUser)
+			var newPassword string
+			fmt.Println("enter new password:")
+			fmt.Scan(&newPassword)
+			newPassword = hashString(newPassword)
+			currentUser.Password = newPassword
+			err := db.UsersDB.UpdateUser(currentUser)
+			if err != nil {
+				fmt.Errorf("error:%w", err)
+				return
+			}
+			c.JSON(http.StatusOK, gin.H{
+				"message": "password change successfully",
+			})
 		}
-
 	}
 }
