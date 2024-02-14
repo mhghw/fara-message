@@ -1,6 +1,6 @@
 package api
 
-type loginBody struct{
+type loginBody struct {
 	Username string `json:username`
 	Password string `json:password`
 }
