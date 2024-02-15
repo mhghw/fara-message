@@ -39,7 +39,7 @@ func ValidateToken(tokenString string) (string, error) {
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return "", fmt.Errorf("Invalid claims format")
+		return "", fmt.Errorf("invalid claims format")
 	}
 	userID := claims[TokenUserID].(string)
 	expirationTime := claims[TokenExpireTime].(time.Time)

@@ -1,7 +1,7 @@
 package api
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -15,18 +15,19 @@ func AuthMiddleware(c *gin.Context) {
 
 			"error": "Authorization is required",
 		})
+
 		c.Abort()
 		return
 	}
 	userID, err := ValidateToken(tokenString)
 	if err != nil {
-		fmt.Errorf("failed to validate token")
+		log.Print("failed to validate token")
 		c.Abort()
 		return
 	}
 	_, err = db.UsersDB.GetUser(userID)
 	if err != nil {
-		fmt.Errorf("user ID is not in the DataBase: %w", err)
+		log.Print("user ID is not in the DataBase: %w", err)
 		c.Abort()
 		return
 	}
