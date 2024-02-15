@@ -22,13 +22,6 @@ type RegisterForm struct {
 	DateOfBirth     string `json:"date_of_birth"`
 }
 
-// type Gender int8
-
-// const(
-// 	Male Gender = iota
-// 	Female
-// )
-
 func convertRegisterFormToUser(form RegisterForm) (db.User, error) {
 	convertTime, err := time.Parse("2006-01-02", form.DateOfBirth)
 	if err != nil {
