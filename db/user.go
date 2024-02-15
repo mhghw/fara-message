@@ -65,6 +65,19 @@ func (db *userDB) GetUser(userID string) (User, error) {
 	return user, nil
 }
 
+func (db *userDB) GetUserByUsername(username string) (User, error) {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	for _, user := range db.users {
+		if user.Username == username {
+			return user, nil
+		}
+	}
+
+	return User{}, ErrUserNotFound
+}
+
 func (db *userDB) UpdateUser(newUser User) error {
 	if _, err := db.GetUser(newUser.ID); err != nil {
 		return fmt.Errorf("error getting user: %w", err)
