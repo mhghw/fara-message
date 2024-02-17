@@ -5,13 +5,12 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mhghw/fara-message/db"
 )
 
-func hashString(input string) string {
+func hash(input string) string {
 	hasher := sha1.New()
 	hasher.Write([]byte(input))
 	hashedBytes := hasher.Sum(nil)
@@ -22,33 +21,30 @@ func hashString(input string) string {
 func authenticateUser(c *gin.Context) {
 	var loginData loginBody
 	err := c.BindJSON(&loginData)
+
 	if err != nil {
 		fmt.Errorf("error binding JSON:%w", err)
 		c.Status(400)
 		return
 	}
+
 	if len(loginData.Username) < 3 || len(loginData.Password) < 8 {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "the username or password is incorrect",
 		})
 		return
 	}
+
 	//checking entered data with data that is already stored
-	for i := 10001; i <= 10004; i++ {
-		temp := strconv.Itoa(i)
-		currentUser, err := db.UsersDB.GetUser(temp)
-		if err != nil {
-			fmt.Errorf("error:%w", err)
-			return
-		}
-		loginData.Password = hashString(loginData.Password)
-		if loginData.Username == currentUser.Username && loginData.Password == currentUser.Password {
-			c.JSON(http.StatusOK, gin.H{
-				"message": "username and password are correct",
-			})
-		}
+	userUnderReveiw, err1 := db.UsersDB.GetUserByUsername(loginData.Username)
+	if err1 != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "the username or password is incorrect",
+		})
 	}
-	c.JSON(http.StatusBadRequest, gin.H{
-		"error": "the username or password is incorrect",
-	})
+	if hash(loginData.Password) == userUnderReveiw.Password {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "username and password are correct",
+		})
+	}
 }
