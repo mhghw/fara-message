@@ -1,7 +1,7 @@
 package api
 
 import (
-	"crypto/md5"
+	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
 	"net/http"
@@ -12,7 +12,7 @@ import (
 )
 
 func hashString(input string) string {
-	hasher := md5.New()
+	hasher := sha1.New()
 	hasher.Write([]byte(input))
 	hashedBytes := hasher.Sum(nil)
 	hashedString := hex.EncodeToString(hashedBytes)
