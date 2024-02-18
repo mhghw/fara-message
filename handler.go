@@ -5,13 +5,12 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mhghw/fara-message/db"
 )
 
-func hashString(input string) string {
+func hash(input string) string {
 	hasher := md5.New()
 	hasher.Write([]byte(input))
 	hashedBytes := hasher.Sum(nil)
@@ -22,39 +21,35 @@ func hashString(input string) string {
 // suppose users post their usernames to edit information
 func changePassword(c *gin.Context) {
 	var username string
+
 	err := c.BindJSON(&username)
 	if err != nil {
 		fmt.Errorf("error binding JSON:%w", err)
 		c.Status(400)
 		return
 	}
+
 	if len(username) < 3 {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "the username or password is incorrect",
 		})
 		return
 	}
-	for i := 10001; i <= 10004; i++ {
-		temp := strconv.Itoa(i)
-		currentUser, err := db.UsersDB.GetUser(temp)
-		if err != nil {
-			fmt.Errorf("error:%w", err)
-			return
-		}
-		if currentUser.Username == username {
-			var newPassword string
-			fmt.Println("enter new password:")
-			fmt.Scan(&newPassword)
-			newPassword = hashString(newPassword)
-			currentUser.Password = newPassword
-			err := db.UsersDB.UpdateUser(currentUser)
-			if err != nil {
-				fmt.Errorf("error:%w", err)
-				return
-			}
-			c.JSON(http.StatusOK, gin.H{
-				"message": "password change successfully",
-			})
-		}
+
+	userUnderReview, err1 := db.UsersDB.GetUserByUsername(username)
+	if err1 != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "the username is incorrect",
+		})
 	}
+	fmt.Println("enter new password:")
+	fmt.Scan(&userUnderReview.Password)
+	err2 := db.UsersDB.UpdateUser(userUnderReview)
+	if err2 != nil {
+		fmt.Errorf("error:%w", err2)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "firstname and lastname edited successfully",
+	})
 }
