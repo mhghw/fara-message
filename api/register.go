@@ -1,8 +1,10 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"strings"
 	"time"
@@ -12,7 +14,6 @@ import (
 )
 
 type RegisterForm struct {
-	ID              string `json:"id"`
 	Username        string `json:"username"`
 	FirstName       string `json:"first_name"`
 	LastName        string `json:"last_name"`
@@ -22,20 +23,49 @@ type RegisterForm struct {
 	DateOfBirth     string `json:"date_of_birth"`
 }
 
-func convertRegisterFormToUser(form RegisterForm) (db.User, error) {
-	convertTime, err := time.Parse("2006-01-02", form.DateOfBirth)
-	if err != nil {
-		return db.User{}, fmt.Errorf("failed to parse date %w", err)
+func generateID() string {
+	const charset = "0123456789"
+	rand.NewSource(10)
+	id := make([]byte, 5)
+	for idx := range id {
+		id[idx] = charset[rand.Intn(len(charset))]
 	}
+
+	return string(id)
+}
+
+// other validation fields will be added...
+func validateUser(form RegisterForm) error {
+	if len(form.Password) < 8 {
+		return errors.New("password is too short")
+	}
+	if form.Password != form.ConfirmPassword {
+		return errors.New("password does not match")
+	}
+
+	return nil
+}
+func assignGender(sex string) db.Gender {
 	var gender db.Gender
-	switch strings.ToLower(form.Gender) {
+	switch strings.ToLower(sex) {
 	case "male":
 		gender = db.Male
 	case "female":
 		gender = db.Female
 	}
+	return gender
+
+}
+func convertRegisterFormToUser(form RegisterForm) (db.User, error) {
+	convertTime, err := time.Parse(time.DateOnly, form.DateOfBirth)
+
+	if err != nil {
+		return db.User{}, fmt.Errorf("failed to parse date %w", err)
+	}
+	gender := assignGender(form.Gender)
+	generatedID := generateID()
 	user := db.User{
-		ID:          form.ID,
+		ID:          generatedID,
 		Username:    form.Username,
 		FirstName:   form.FirstName,
 		LastName:    form.LastName,
@@ -43,6 +73,7 @@ func convertRegisterFormToUser(form RegisterForm) (db.User, error) {
 		Gender:      gender,
 		DateOfBirth: convertTime,
 	}
+
 	return user, nil
 }
 
@@ -54,24 +85,24 @@ func Register(c *gin.Context) {
 		log.Print("failed to bind json", err)
 		return
 	}
-	if requestBody.Password != requestBody.ConfirmPassword {
-		c.String(http.StatusBadRequest, "password does not match")
-		return
-	}
-	token, err := CreateJWTToken(requestBody.ID)
+	err = validateUser(requestBody)
 	if err != nil {
-		log.Print("failed to create token")
+		log.Print("failed to validate user", err)
 		return
 	}
+
 	user, err := convertRegisterFormToUser(requestBody)
 	if err != nil {
 		log.Print("failed to convert register form to user")
 		return
 	}
+
+	token, err := CreateJWTToken(user.ID)
+	if err != nil {
+		log.Print("failed to create token")
+		return
+	}
+
 	db.UsersDB.CreateUser(user)
-	// check, _ := db.UsersDB.GetUser(user.ID)
-
-	c.JSON(http.StatusOK, check)
-
 	c.JSON(http.StatusOK, token)
 }

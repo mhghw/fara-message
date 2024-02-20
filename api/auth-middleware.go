@@ -11,24 +11,26 @@ import (
 func AuthMiddleware(c *gin.Context) {
 	tokenString := c.GetHeader("Authorization")
 	if tokenString == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{
+		c.JSON(http.StatusForbidden, gin.H{
 
 			"error": "Authorization is required",
 		})
 
-		c.Abort()
+		c.AbortWithStatus(http.StatusForbidden)
+
 		return
 	}
 	userID, err := ValidateToken(tokenString)
 	if err != nil {
 		log.Print("failed to validate token")
-		c.Abort()
+		c.AbortWithStatus(http.StatusForbidden)
 		return
 	}
 	_, err = db.UsersDB.GetUser(userID)
 	if err != nil {
 		log.Print("user ID is not in the DataBase: %w", err)
-		c.Abort()
+		c.AbortWithStatus(http.StatusForbidden)
+
 		return
 	}
 

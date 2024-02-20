@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -10,8 +11,8 @@ import (
 var secretKey = []byte("farawin")
 
 const (
-	TokenExpireTime = "exp"
-	TokenUserID     = "id"
+	TokenExpireTime = "expiration_time"
+	TokenUserID     = "user_id"
 )
 
 func CreateJWTToken(userID string) (string, error) {
@@ -35,16 +36,16 @@ func ValidateToken(tokenString string) (string, error) {
 		return "", fmt.Errorf("failed to parse token: %w", err)
 	}
 	if !token.Valid {
-		return "", fmt.Errorf("invalid token")
+		return "", errors.New("invalid token")
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return "", fmt.Errorf("invalid claims format")
+		return "", errors.New("invalid claims format")
 	}
 	userID := claims[TokenUserID].(string)
 	expirationTime := claims[TokenExpireTime].(time.Time)
 	if expirationTime.Before(time.Now()) {
-		return "", fmt.Errorf("token has expired")
+		return "", errors.New("token has expired")
 	}
 
 	return userID, nil
