@@ -7,5 +7,5 @@ import (
 func StartWebServer() {
 	router := gin.New()
 	router.POST("/login", authenticateUser)
-	router.Run()
+	router.Run(":8080")
 }
