@@ -5,6 +5,6 @@ type loginBody struct {
 	Password string `json:password`
 }
 
-type errorStruct struct{
+type HTTPError struct{
 	Message string `json:message`
 }

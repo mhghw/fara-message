@@ -28,22 +28,22 @@ func authenticateUser(c *gin.Context) {
 		return
 	}
 
-	err1 := errorStruct{Message: "the username or password is incorrect"}
-	jsonErr, err2 := json.Marshal(err1)
-	if err2!=nil {
-		fmt.Errorf("error:%w",err2)
+	errIncorrectUserOrPass := HTTPError{Message: "the username or password is incorrect"}
+	errIncorrectUserOrPassJSON, errInMarshalling := json.Marshal(errIncorrectUserOrPass)
+	if errInMarshalling!=nil {
+		fmt.Errorf("error:%w",errInMarshalling)
 		return
 	}
 
 	if len(loginData.Username) < 3 || len(loginData.Password) < 8 {
-		c.JSON(http.StatusBadRequest,jsonErr)
+		c.JSON(http.StatusBadRequest,errIncorrectUserOrPassJSON)
 		return
 	}
 
 	//checking entered data with data that is already stored
 	userUnderReveiw, err := db.UsersDB.GetUserByUsername(loginData.Username)
 	if err != nil {
-		c.JSON(http.StatusBadRequest,jsonErr)
+		c.JSON(http.StatusBadRequest,errIncorrectUserOrPassJSON)
 	}
 	if hash(loginData.Password) == userUnderReveiw.Password {
 		c.JSON(http.StatusOK, gin.H{
