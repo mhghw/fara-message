@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -21,6 +22,9 @@ type RegisterForm struct {
 	ConfirmPassword string `json:"confirm_password"`
 	Gender          string `json:"gender"`
 	DateOfBirth     string `json:"date_of_birth"`
+}
+type tokenJSON struct {
+	Token string `json:"token"`
 }
 
 func generateID() string {
@@ -102,7 +106,15 @@ func Register(c *gin.Context) {
 		log.Print("failed to create token")
 		return
 	}
+	userToken := tokenJSON{
+		Token: token,
+	}
+	userTokenJSON, err := json.Marshal(userToken)
+	if err != nil {
+		log.Print("failed to marshal token")
+		return
+	}
 
 	db.UsersDB.CreateUser(user)
-	c.JSON(http.StatusOK, token)
+	c.JSON(http.StatusOK, userTokenJSON)
 }
