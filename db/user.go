@@ -38,6 +38,7 @@ type User struct {
 	Password    string
 	Gender      Gender
 	DateOfBirth time.Time
+	CreatedTime time.Time
 }
 
 func (db *userDB) CreateUser(user User) error {
@@ -100,6 +101,7 @@ func sampleUsers() map[string]User {
 			Password:    "554dbf0b41b3cd068ee1fcfd6235466a263647b4", //qwerqwer
 			Gender:      Male,
 			DateOfBirth: time.Date(1997, time.January, 12, 0, 0, 0, 0, time.UTC),
+			CreatedTime: time.Now(),
 		},
 		"10002": {
 			ID:          "10002",
@@ -109,6 +111,7 @@ func sampleUsers() map[string]User {
 			Password:    "b6d2b6e8aad5b72946292dea96b5af2c6d3e94ab", //rezarezagholami
 			Gender:      Male,
 			DateOfBirth: time.Date(1978, time.May, 2, 0, 0, 0, 0, time.UTC),
+			CreatedTime: time.Now(),
 		},
 		"10003": {
 			ID:          "10003",
@@ -118,6 +121,7 @@ func sampleUsers() map[string]User {
 			Password:    "37ed856a34c507996c81a7e5b702dfc11a7bd416", //nedapanahi1234
 			Gender:      Female,
 			DateOfBirth: time.Date(2005, time.August, 19, 0, 0, 0, 0, time.UTC),
+			CreatedTime: time.Now(),
 		},
 		"10004": {
 			ID:          "10004",
@@ -127,6 +131,7 @@ func sampleUsers() map[string]User {
 			Password:    "4caab017bc944efa3ff354d44dc44c29a85f78fd", //sarahfiwowoie
 			Gender:      Female,
 			DateOfBirth: time.Date(1978, time.November, 1, 0, 0, 0, 0, time.UTC),
+			CreatedTime: time.Now(),
 		},
 	}
 }
