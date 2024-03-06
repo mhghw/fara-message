@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"log"
 	"time"
 )
@@ -22,7 +23,7 @@ type ChatMember struct {
 	LeftTime   time.Time
 }
 
-func NewChat(chatName string, chatType string, user []User) {
+func NewChat(chatName string, chatType string, user []User) error {
 	chat := Chat{
 		ChatName:    chatName,
 		ChatType:    chatType,
@@ -38,10 +39,11 @@ func NewChat(chatName string, chatType string, user []User) {
 
 		if err := DB.Create(&chatMember).Error; err != nil {
 			DB.Delete(&chatMember)
-			log.Print("cannot create chat member")
-			return
+			return errors.New("cannot create chat member")
+
 		}
 	}
 
 	DB.Create(&chat)
+	return nil
 }
