@@ -11,6 +11,7 @@ func RunWebServer(port int) error {
 	router := gin.New()
 	router.POST("/user/register", Register)
 	router.Use(AuthMiddleware)
+	router.POST("/user/newchat", NewChatAPI)
 	err := router.Run(addr)
 	return err
 }
