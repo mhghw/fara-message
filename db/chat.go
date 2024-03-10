@@ -2,26 +2,9 @@ package db
 
 import (
 	"errors"
-	"log"
+	"fmt"
 	"time"
 )
-
-type Chat struct {
-	ChatID      int64 `gorm:"primary_key"`
-	ChatName    string
-	CreatedTime time.Time
-	DeletedTime time.Time
-	ChatType    string
-}
-
-type ChatMember struct {
-	UserID     int64 `gorm:"foreign_key"`
-	User       User
-	ChatID     int64 `gorm:"foreign_key"`
-	Chat       Chat
-	JoinedTime time.Time
-	LeftTime   time.Time
-}
 
 func NewChat(chatName string, chatType string, user []User) error {
 	chat := Chat{
@@ -46,4 +29,12 @@ func NewChat(chatName string, chatType string, user []User) error {
 
 	DB.Create(&chat)
 	return nil
+}
+
+func GetChatMessages(ChatID int64) ([]Message, error) {
+	var messages []Message
+	if err := DB.Where("chat_id = ?", ChatID).Find(&messages).Error; err != nil {
+		return nil, fmt.Errorf("no  message found for chat %w", err)
+	}
+	return messages, nil
 }
