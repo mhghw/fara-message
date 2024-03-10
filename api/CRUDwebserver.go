@@ -9,6 +9,7 @@ func RunWebServer(){
 	router.POST("/user/create",createUser)
 	router.POST("/user/read",readUser)
 	router.POST("/user/update",updateUser)
-	// router.POST("/user/delete",deleteUser)
+	router.POST("/user/delete",deleteUser)
+	router.Run()
 }
 

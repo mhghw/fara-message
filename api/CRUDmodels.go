@@ -5,7 +5,7 @@ import (
 )
 
 type User struct {
-	User_ID       int
+	ID       int
 	Username      string    `json:"username"`
 	Firstname     string    `json:"firstname"`
 	Lastname      string    `json:"lastname"`
@@ -13,4 +13,11 @@ type User struct {
 	Gender        string    `json:"gender"`
 	Date_Of_Birth time.Time `json:"date_of_birthday"`
 	Created_Time  time.Time `json:"created_time"`
+}
+
+type newInformation struct{
+	Firstname     string    `json:"firstname"`
+	Lastname      string    `json:"lastname"`
+	Gender        string    `json:"gender"`
+	Date_Of_Birth time.Time `json:"date_of_birthday"`
 }
