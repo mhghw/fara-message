@@ -1,22 +1,12 @@
-package changePassword
+package api
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mhghw/fara-message/db"
 )
-
-func hash(input string) string {
-	hasher := md5.New()
-	hasher.Write([]byte(input))
-	hashedBytes := hasher.Sum(nil)
-	hashedString := hex.EncodeToString(hashedBytes)
-	return hashedString
-}
 
 // suppose users post their usernames to edit information
 func changePassword(c *gin.Context) {

@@ -12,6 +12,8 @@ func RunWebServer(port int) error {
 	router.POST("/user/register", Register)
 	router.POST("/user/change_password",changePassword)
 	router.POST("/login", login)
+	router.POST("/login", login)
+	router.POST("/user/edit",editUser) 
 	router.Use(AuthMiddleware)
 	err := router.Run(addr)
 	return err
