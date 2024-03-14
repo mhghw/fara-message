@@ -8,6 +8,12 @@ import (
 	"github.com/mhghw/fara-message/db"
 )
 
+type Information struct {
+	Username  string `json:"username"`
+	Firstname string `json:"firstname"`
+	Lastname  string `json:"lastname"`
+}
+
 func editUser(c *gin.Context) {
 	var userInfo Information
 
