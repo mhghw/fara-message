@@ -1,4 +1,4 @@
-package editUser
+package api
 
 import (
 	"fmt"
@@ -9,35 +9,35 @@ import (
 )
 
 func editUser(c *gin.Context) {
-	var username string
+	var userInfo Information
 
-	err := c.BindJSON(&username)
+	err := c.BindJSON(&userInfo)
 	if err != nil {
 		fmt.Errorf("error binding JSON:%w", err)
 		c.Status(400)
 		return
 	}
 
-	if len(username) < 3 {
+	if len(userInfo.Username) < 3 {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "the username or password is incorrect",
+			"error": "the username is incorrect",
 		})
 		return
 	}
 
-	userUnderReview, err1 := db.UsersDB.GetUserByUsername(username)
-	if err1 != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "the username is incorrect",
-		})
+	userUnderReview, err := db.UsersDB.GetUserByUsername(userInfo.Username)
+	if err != nil {
+		fmt.Errorf("error getting username from database:%w", err)
+		c.Status(400)
+		return
 	}
-	fmt.Println("enter new firstname:")
-	fmt.Scan(&userUnderReview.FirstName)
-	fmt.Println("enter new lastname:")
-	fmt.Scan(&userUnderReview.LastName)
-	err2 := db.UsersDB.UpdateUser(userUnderReview)
-	if err2 != nil {
-		fmt.Errorf("error:%w", err2)
+
+	userUnderReview.FirstName=userInfo.Firstname
+	userUnderReview.LastName=userInfo.Lastname
+	err = db.UsersDB.UpdateUser(userUnderReview)
+	if err != nil {
+		fmt.Errorf("error updating user:%w", err)
+		c.Status(400)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
