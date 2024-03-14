@@ -33,15 +33,15 @@ func changePassword(c *gin.Context) {
 
 	userUnderReview, err := db.UsersDB.GetUserByUsername(userData.Username)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "the username is incorrect",
-		})
+		log.Printf("error getting user from database:%v", err)
+		c.Status(400)
 		return
 	}
 	userUnderReview.Password = userData.Password
 	err = db.UsersDB.UpdateUser(userUnderReview)
 	if err != nil {
 		log.Printf("error updating user:%v", err)
+		c.Status(400)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
