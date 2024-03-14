@@ -11,6 +11,15 @@ import (
 	"github.com/mhghw/fara-message/db"
 )
 
+type loginBody struct {
+	Username string `json:username`
+	Password string `json:password`
+}
+
+type HTTPError struct{
+	Message string `json:message`
+}
+
 func hash(input string) string {
 	hasher := sha1.New()
 	hasher.Write([]byte(input))
