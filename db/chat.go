@@ -6,10 +6,10 @@ import (
 	"time"
 )
 
-func NewChat(chatName string, chatType string, user []User) error {
+func NewChat(chatName string, chatType ChatType, user []User) error {
 	chat := Chat{
 		ChatName:    chatName,
-		ChatType:    chatType,
+		Type:        chatType,
 		CreatedTime: time.Now(),
 	}
 
@@ -37,4 +37,9 @@ func GetChatMessages(ChatID int64) ([]Message, error) {
 		return nil, fmt.Errorf("no  message found for chat %w", err)
 	}
 	return messages, nil
+}
+
+func GetUserChats(UserID int64) ([]Chat, error) {
+	var chats []Chat
+
 }

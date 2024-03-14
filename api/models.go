@@ -11,10 +11,12 @@ type HTTPError struct {
 	Message string `json:message`
 }
 
-type NewChat struct {
+type NewGroupChat struct {
 	ChatName string    `json:"chatName"`
-	ChatType string    `json:"chatType"`
 	Users    []db.User `json:"users"`
+}
+type NewDirectChat struct {
+	Users []db.User `json:"users"`
 }
 
 type Chat struct {

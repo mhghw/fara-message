@@ -8,15 +8,30 @@ import (
 	"github.com/mhghw/fara-message/db"
 )
 
-func NewChatAPI(c *gin.Context) {
-	var requestBody NewChat
+func NewDirectChatRequest(c *gin.Context) {
+	var requestBody NewDirectChat
 	err := c.BindJSON(&requestBody)
 	if err != nil {
-		log.Print("failed to bind json", err)
+		log.Print("failed to bind json, ", err)
 		return
 	}
-	if err := db.NewChat(requestBody.ChatName, requestBody.ChatType, requestBody.Users); err != nil {
-		log.Print("failed to create chat", err)
+
+	if err := db.NewChat("", db.Direct, requestBody.Users); err != nil {
+		log.Print("failed to create chat, ", err)
+		return
+	}
+}
+
+func NewGroupChatRequest(c *gin.Context) {
+	var requestBody NewGroupChat
+	err := c.BindJSON(&requestBody)
+	if err != nil {
+		log.Print("failed to bind json, ", err)
+		return
+	}
+
+	if err := db.NewChat(requestBody.ChatName, db.Group, requestBody.Users); err != nil {
+		log.Printf("failed to create chat: %v", err)
 		return
 	}
 }
@@ -25,7 +40,7 @@ func GetChatMessagesAPI(c *gin.Context) {
 	var requestBody Chat
 	err := c.BindJSON(&requestBody)
 	if err != nil {
-		log.Print("failed to bind json", err)
+		log.Printf("failed to bind json: %v", err)
 		return
 	}
 	chatID := requestBody.ID

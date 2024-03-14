@@ -11,7 +11,8 @@ func RunWebServer(port int) error {
 	router := gin.New()
 	router.POST("/user/register", Register)
 	router.Use(AuthMiddleware)
-	router.POST("/user/newchat", NewChatAPI)
+	router.POST("/new_direct_chat", NewDirectChatRequest)
+	router.POST("/new_Group_chat", NewGroupChatRequest)
 	router.GET("/chat/:id/messages", GetChatMessagesAPI)
 	err := router.Run(addr)
 	return err
