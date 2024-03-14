@@ -38,8 +38,3 @@ func GetChatMessages(ChatID int64) ([]Message, error) {
 	}
 	return messages, nil
 }
-
-func GetUserChats(UserID int64) ([]Chat, error) {
-	var chats []Chat
-
-}
