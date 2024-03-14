@@ -1,45 +1,50 @@
 package api
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mhghw/fara-message/db"
 )
 
+type UserData struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 // suppose users post their usernames to edit information
 func changePassword(c *gin.Context) {
-	var username string
+	var userData UserData
 
-	err := c.BindJSON(&username)
+	err := c.BindJSON(&userData.Username)
 	if err != nil {
-		fmt.Errorf("error binding JSON:%w", err)
+		log.Printf("error binding JSON:%v", err)
 		c.Status(400)
 		return
 	}
 
-	if len(username) < 3 {
+	if len(userData.Username) < 3 {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "the username or password is incorrect",
+			"error": "the username is incorrect",
 		})
 		return
 	}
 
-	userUnderReview, err1 := db.UsersDB.GetUserByUsername(username)
-	if err1 != nil {
+	userUnderReview, err := db.UsersDB.GetUserByUsername(userData.Username)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "the username is incorrect",
 		})
+		return
 	}
-	fmt.Println("enter new password:")
-	fmt.Scan(&userUnderReview.Password)
-	err2 := db.UsersDB.UpdateUser(userUnderReview)
-	if err2 != nil {
-		fmt.Errorf("error:%w", err2)
+	userUnderReview.Password = userData.Password
+	err = db.UsersDB.UpdateUser(userUnderReview)
+	if err != nil {
+		log.Printf("error updating user:%v", err)
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"message": "firstname and lastname edited successfully",
+		"message": "password change successfully",
 	})
 }

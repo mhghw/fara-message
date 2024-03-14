@@ -2,7 +2,7 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -22,7 +22,7 @@ func login(c *gin.Context) {
 	var loginData loginBody
 	err := c.BindJSON(&loginData)
 	if err != nil {
-		fmt.Errorf("error binding JSON:%w", err)
+		log.Printf("error binding JSON:%v", err)
 		c.Status(400)
 		return
 	}
@@ -30,7 +30,8 @@ func login(c *gin.Context) {
 	errIncorrectUserOrPass := HTTPError{Message: "the username or password is incorrect"}
 	errIncorrectUserOrPassJSON, errInMarshalling := json.Marshal(errIncorrectUserOrPass)
 	if errInMarshalling != nil {
-		fmt.Errorf("error:%w", errInMarshalling)
+		log.Printf("error:%v", errInMarshalling)
+		c.Status(400)
 		return
 	}
 
