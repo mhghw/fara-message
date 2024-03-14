@@ -8,20 +8,20 @@ import (
 
 func NewChat(chatName string, chatType ChatType, user []User) error {
 	chat := Chat{
-		ChatName:    chatName,
+		Name:        chatName,
 		Type:        chatType,
 		CreatedTime: time.Now(),
 	}
-
-	for _, u := range user {
-		chatMember := ChatMember{
+	var chatMembers []ChatMember
+	for i, u := range user {
+		chatMembers[i] = ChatMember{
 			JoinedTime: time.Now(),
 			ChatID:     chat.ChatID,
 			UserID:     u.ID,
 		}
 
-		if err := DB.Create(&chatMember).Error; err != nil {
-			DB.Delete(&chatMember)
+		if err := DB.Create(&chatMembers).Error; err != nil {
+			DB.Delete(&chatMembers)
 			return errors.New("cannot create chat member")
 
 		}

@@ -31,7 +31,7 @@ var (
 
 type Chat struct {
 	ID          int64  `gorm:"primary_key"`
-	ChatName    string `gorm:"chat_name;default:' '"`
+	Name        string `gorm:"chat_name;default:' '"`
 	CreatedTime time.Time
 	DeletedTime time.Time
 	Type        ChatType
