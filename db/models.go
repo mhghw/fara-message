@@ -45,3 +45,8 @@ type ChatMember struct {
 	JoinedTime time.Time
 	LeftTime   time.Time
 }
+type MessageInformation struct {
+	SenderID int    `json:"senderID"`
+	ChatID   int    `json:"chatID"`
+	Content  string `json:"content"`
+}

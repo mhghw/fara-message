@@ -61,11 +61,12 @@ func assignGender(sex string) db.Gender {
 
 }
 func convertRegisterFormToUser(form RegisterForm) (db.User, error) {
-	convertTime, err := time.Parse(time.DateOnly, form.DateOfBirth)
-
+	layout := "2006-01-02 15:04:05"
+	convertTime, err := time.Parse(layout, form.DateOfBirth)
 	if err != nil {
 		return db.User{}, fmt.Errorf("failed to parse date %w", err)
 	}
+
 	gender := assignGender(form.Gender)
 	generatedID := generateID()
 	user := db.User{

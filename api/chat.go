@@ -8,8 +8,8 @@ import (
 	"github.com/mhghw/fara-message/db"
 )
 
-func NewDirectChatRequest(c *gin.Context) {
-	var requestBody NewDirectChat
+func NewDirectChat(c *gin.Context) {
+	var requestBody NewDirectChatRequest
 	err := c.BindJSON(&requestBody)
 	if err != nil {
 		log.Print("failed to bind json, ", err)
@@ -22,8 +22,8 @@ func NewDirectChatRequest(c *gin.Context) {
 	}
 }
 
-func NewGroupChatRequest(c *gin.Context) {
-	var requestBody NewGroupChat
+func NewGroupChat(c *gin.Context) {
+	var requestBody NewGroupChatRequest
 	err := c.BindJSON(&requestBody)
 	if err != nil {
 		log.Print("failed to bind json, ", err)
