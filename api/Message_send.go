@@ -11,6 +11,12 @@ import (
 	"gorm.io/gorm"
 )
 
+type MessageInformation struct{
+	SenderID int `json:"senderID"`
+	ChatID int  `json:"chatID"`
+	Content string `json:"content"`
+}
+
 var db *gorm.DB
 
 func init() {
