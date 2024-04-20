@@ -1,19 +1,25 @@
 package api
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mhghw/fara-message/db"
 )
 
+type Information struct {
+	Username  string `json:"username"`
+	Firstname string `json:"firstname"`
+	Lastname  string `json:"lastname"`
+}
+
 func editUser(c *gin.Context) {
 	var userInfo Information
 
 	err := c.BindJSON(&userInfo)
 	if err != nil {
-		fmt.Errorf("error binding JSON:%w", err)
+		log.Printf("error binding JSON:%v", err)
 		c.Status(400)
 		return
 	}
@@ -27,16 +33,16 @@ func editUser(c *gin.Context) {
 
 	userUnderReview, err := db.UsersDB.GetUserByUsername(userInfo.Username)
 	if err != nil {
-		fmt.Errorf("error getting username from database:%w", err)
+		log.Printf("error getting username from database:%v", err)
 		c.Status(400)
 		return
 	}
 
-	userUnderReview.FirstName=userInfo.Firstname
-	userUnderReview.LastName=userInfo.Lastname
+	userUnderReview.FirstName = userInfo.Firstname
+	userUnderReview.LastName = userInfo.Lastname
 	err = db.UsersDB.UpdateUser(userUnderReview)
 	if err != nil {
-		fmt.Errorf("error updating user:%w", err)
+		log.Printf("error updating user:%v", err)
 		c.Status(400)
 		return
 	}
