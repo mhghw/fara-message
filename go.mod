@@ -1,6 +1,6 @@
 module github.com/mhghw/fara-message
 
-go 1.22.0
+go 1.22
 
 require (
 	github.com/gin-gonic/gin v1.9.1
@@ -11,7 +11,6 @@ require (
 )
 
 require (
-	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/bytedance/sonic v1.9.1 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
@@ -38,6 +37,4 @@ require (
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/protobuf v1.32.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	gorm.io/driver/mysql v1.5.4 // indirect
-	gorm.io/gorm v1.25.7 // indirect
 )
