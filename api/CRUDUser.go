@@ -4,11 +4,30 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
+
+type User struct {
+	ID       int
+	Username      string    `json:"username"`
+	Firstname     string    `json:"firstname"`
+	Lastname      string    `json:"lastname"`
+	Password      string    `json:"passowrd"`
+	Gender        string    `json:"gender"`
+	Date_Of_Birth time.Time `json:"date_of_birthday"`
+	Created_Time  time.Time `json:"created_time"`
+}
+
+type newInformation struct{
+	Firstname     string    `json:"firstname"`
+	Lastname      string    `json:"lastname"`
+	Gender        string    `json:"gender"`
+	Date_Of_Birth time.Time `json:"date_of_birthday"`
+}
 
 var db *gorm.DB
 
@@ -113,17 +132,17 @@ func updateUser(c *gin.Context) {
 	}
 
 	accessToken := parts[1]
-	userID, err1 := getUserIDFromToken(accessToken) //err1!!!!!!!!!!!!!!!!!
-	if err1 != nil {
-		fmt.Errorf("error:%w", err1)
+	userID, err := getUserIDFromToken(accessToken) 
+	if err != nil {
+		fmt.Errorf("error:%w", err)
 		c.Status(400)
 		return
 	}
 
 	var newInfo newInformation
-	err2 := c.BindJSON(&newInfo)
-	if err2 != nil {
-		fmt.Errorf("error binding JSON:%w", err2)
+	err = c.BindJSON(&newInfo)
+	if err != nil {
+		fmt.Errorf("error binding JSON:%w", err)
 		c.Status(400)
 		return
 	}
@@ -153,7 +172,7 @@ func deleteUser(c *gin.Context) {
 	}
 
 	accessToken := parts[1]
-	userID, err := getUserIDFromToken(accessToken) //err1!!!!!!!!!!!!!!!!!
+	userID, err := getUserIDFromToken(accessToken)
 	if err != nil {
 		fmt.Errorf("error:%w", err)
 		c.Status(400)
@@ -161,7 +180,7 @@ func deleteUser(c *gin.Context) {
 	}
 
 	var user User
-	result:=db.First(&user,"ID=?",userID)     //id or ID??????????????????
+	result:=db.First(&user,"ID=?",userID) 
 	if result.Error != nil {
 		fmt.Errorf("error reading user:%w", result.Error)
 		c.Status(400)
