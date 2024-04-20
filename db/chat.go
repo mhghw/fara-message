@@ -40,3 +40,11 @@ func GetChatMessages(ChatID int64) ([]MessageInformation, error) {
 	}
 	return messages, nil
 }
+
+func GetUsersChatMembers(userID int) ([]ChatMember, error) {
+	var usersChats []ChatMember
+	if err := DB.Where("user_id = ?", userID).Find(&usersChats).Error; err != nil {
+		return nil, fmt.Errorf("no  chat found for user %w", err)
+	}
+	return usersChats, nil
+}

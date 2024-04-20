@@ -2,6 +2,7 @@ package api
 
 import (
 	"log"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/goccy/go-json"
@@ -36,7 +37,7 @@ func NewGroupChat(c *gin.Context) {
 	}
 }
 
-func GetChatMessagesAPI(c *gin.Context) {
+func GetChatMessages(c *gin.Context) {
 	var requestBody Chat
 	err := c.BindJSON(&requestBody)
 	if err != nil {
@@ -56,4 +57,15 @@ func GetChatMessagesAPI(c *gin.Context) {
 	}
 	c.JSON(200, chatMessages)
 
+}
+
+func GetUsersChats(c *gin.Context) {
+	userIDString := c.Param("id")
+	userID, _ := strconv.Atoi(userIDString)
+	chatMembers, err := db.GetUsersChatMembers(userID)
+	if err != nil {
+		log.Print("failed to get users chat members")
+		return
+	}
+	c.JSON(200, chatMembers)
 }
