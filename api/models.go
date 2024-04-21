@@ -10,15 +10,3 @@ type loginBody struct {
 type HTTPError struct {
 	Message string `json:message`
 }
-
-type NewGroupChatRequest struct {
-	ChatName string    `json:"chatName"`
-	Users    []db.User `json:"users"`
-}
-type NewDirectChatRequest struct {
-	Users []db.User `json:"users"`
-}
-
-type Chat struct {
-	ID int
-}

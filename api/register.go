@@ -23,8 +23,46 @@ type RegisterForm struct {
 	Gender          string `json:"gender"`
 	DateOfBirth     string `json:"date_of_birth"`
 }
+
 type tokenJSON struct {
 	Token string `json:"token"`
+}
+
+func RegisterHandler(c *gin.Context) {
+	var requestBody RegisterForm
+	err := c.BindJSON(&requestBody)
+	if err != nil {
+		log.Print("failed to bind json", err)
+		return
+	}
+	err = validateUser(requestBody)
+	if err != nil {
+		log.Print("failed to validate user", err)
+		return
+	}
+
+	user, err := convertRegisterFormToUser(requestBody)
+	if err != nil {
+		log.Print("failed to convert register form to user")
+		return
+	}
+
+	token, err := CreateJWTToken(user.ID)
+	if err != nil {
+		log.Print("failed to create token")
+		return
+	}
+	userToken := tokenJSON{
+		Token: token,
+	}
+	userTokenJSON, err := json.Marshal(userToken)
+	if err != nil {
+		log.Print("failed to marshal token")
+		return
+	}
+
+	db.UsersDB.CreateUser(user)
+	c.JSON(http.StatusOK, userTokenJSON)
 }
 
 func generateID() string {
@@ -83,39 +121,3 @@ func convertRegisterFormToUser(form RegisterForm) (db.User, error) {
 }
 
 // handle func for register,receives a json string according to the RegisterForm struct and generate a JWT with ID parameter
-func Register(c *gin.Context) {
-	var requestBody RegisterForm
-	err := c.BindJSON(&requestBody)
-	if err != nil {
-		log.Print("failed to bind json", err)
-		return
-	}
-	err = validateUser(requestBody)
-	if err != nil {
-		log.Print("failed to validate user", err)
-		return
-	}
-
-	user, err := convertRegisterFormToUser(requestBody)
-	if err != nil {
-		log.Print("failed to convert register form to user")
-		return
-	}
-
-	token, err := CreateJWTToken(user.ID)
-	if err != nil {
-		log.Print("failed to create token")
-		return
-	}
-	userToken := tokenJSON{
-		Token: token,
-	}
-	userTokenJSON, err := json.Marshal(userToken)
-	if err != nil {
-		log.Print("failed to marshal token")
-		return
-	}
-
-	db.UsersDB.CreateUser(user)
-	c.JSON(http.StatusOK, userTokenJSON)
-}

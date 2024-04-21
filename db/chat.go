@@ -7,6 +7,36 @@ import (
 	"time"
 )
 
+type Chat struct {
+	ID          int64  `gorm:"primary_key"`
+	Name        string `gorm:"chat_name;default:' '"`
+	CreatedTime time.Time
+	DeletedTime time.Time
+	Type        ChatType
+}
+
+type ChatMember struct {
+	UserID     int64 `gorm:"foreign_key"`
+	User       User
+	ChatID     int64 `gorm:"foreign_key"`
+	Chat       Chat
+	JoinedTime time.Time
+	LeftTime   time.Time
+}
+type ChatType struct {
+	chatType int8
+}
+
+func (c *ChatType) Int() int8 {
+	return c.chatType
+}
+
+var (
+	Direct  = ChatType{0}
+	Group   = ChatType{1}
+	Unknown = ChatType{-1}
+)
+
 func NewChat(chatName string, chatType ChatType, user []User) error {
 	chat := Chat{
 		Name:        chatName,
@@ -33,8 +63,8 @@ func NewChat(chatName string, chatType ChatType, user []User) error {
 	return nil
 }
 
-func GetChatMessages(ChatID int64) ([]MessageInformation, error) {
-	var messages []MessageInformation
+func GetChatMessages(ChatID int64) ([]Message, error) {
+	var messages []Message
 	if err := DB.Where("chat_id = ?", ChatID).Find(&messages).Error; err != nil {
 		return nil, fmt.Errorf("no  message found for chat %w", err)
 	}

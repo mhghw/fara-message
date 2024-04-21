@@ -14,5 +14,5 @@ func ConnectToDB() {
 	if err != nil {
 		panic("failed to connect to database")
 	}
-	DB.AutoMigrate(&Chat{}, &ChatMember{}, &MessageInformation{})
+	DB.AutoMigrate(&Chat{}, &ChatMember{}, &Message{})
 }

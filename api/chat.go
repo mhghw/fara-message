@@ -9,7 +9,26 @@ import (
 	"github.com/mhghw/fara-message/db"
 )
 
-func NewDirectChat(c *gin.Context) {
+type ChatResponse struct {
+	ID       int       `json:"chatId"`
+	Name     string    `json:"chatName"`
+	Messages []Message `json:"messages"`
+	Users    []User    `json:"users"`
+}
+
+type ChatRequest struct {
+	ID   int    `json:"chatId"`
+	Name string `json:"chatName"`
+}
+type NewGroupChatRequest struct {
+	ChatName string    `json:"chatName"`
+	Users    []db.User `json:"users"`
+}
+type NewDirectChatRequest struct {
+	Users []db.User `json:"users"`
+}
+
+func NewDirectChatHandler(c *gin.Context) {
 	var requestBody NewDirectChatRequest
 	err := c.BindJSON(&requestBody)
 	if err != nil {
@@ -23,7 +42,7 @@ func NewDirectChat(c *gin.Context) {
 	}
 }
 
-func NewGroupChat(c *gin.Context) {
+func NewGroupChatHandler(c *gin.Context) {
 	var requestBody NewGroupChatRequest
 	err := c.BindJSON(&requestBody)
 	if err != nil {
@@ -37,8 +56,8 @@ func NewGroupChat(c *gin.Context) {
 	}
 }
 
-func GetChatMessages(c *gin.Context) {
-	var requestBody Chat
+func GetChatMessagesHandler(c *gin.Context) {
+	var requestBody ChatRequest
 	err := c.BindJSON(&requestBody)
 	if err != nil {
 		log.Printf("failed to bind json: %v", err)
@@ -59,7 +78,7 @@ func GetChatMessages(c *gin.Context) {
 
 }
 
-func GetUsersChats(c *gin.Context) {
+func GetUsersChatsHandler(c *gin.Context) {
 	userIDString := c.Param("id")
 	userID, _ := strconv.Atoi(userIDString)
 	chatMembers, err := db.GetUsersChatMembers(userID)
