@@ -1,8 +1,6 @@
 package api
 
 import (
-	"crypto/sha1"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -10,14 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mhghw/fara-message/db"
 )
-
-func hash(input string) string {
-	hasher := sha1.New()
-	hasher.Write([]byte(input))
-	hashedBytes := hasher.Sum(nil)
-	hashedString := hex.EncodeToString(hashedBytes)
-	return hashedString
-}
 
 func authenticateUser(c *gin.Context) {
 	var loginData loginBody

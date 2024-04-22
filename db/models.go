@@ -45,8 +45,28 @@ type ChatMember struct {
 	JoinedTime time.Time
 	LeftTime   time.Time
 }
-type MessageInformation struct {
+
+type Message struct {
+	ID       int    `json:"id`
 	SenderID int    `json:"senderID"`
 	ChatID   int    `json:"chatID"`
 	Content  string `json:"content"`
 }
+
+// type Gender int8
+
+// const (
+// 	Male Gender = iota
+// 	Female
+// )
+
+// type User struct {
+// 	ID          string
+// 	Username    string
+// 	FirstName   string
+// 	LastName    string
+// 	Password    string
+// 	Gender      Gender
+// 	DateOfBirth time.Time
+// 	CreatedTime time.Time
+// }

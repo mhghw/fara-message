@@ -9,7 +9,25 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func createUser(c *gin.Context) {
+type Gender int8
+
+const (
+	Male Gender = iota
+	Female
+)
+
+type User struct {
+	ID          string
+	Username    string
+	FirstName   string
+	LastName    string
+	Password    string
+	Gender      Gender
+	DateOfBirth time.Time
+	CreatedTime time.Time
+}
+
+func CreateUserHandler(c *gin.Context) {
 	var newUser User
 	err := c.BindJSON(&newUser)
 	if err != nil {
