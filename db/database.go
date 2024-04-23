@@ -1,6 +1,9 @@
 package db
 
 import (
+	"fmt"
+	"log"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -14,5 +17,10 @@ func ConnectToDB() {
 	if err != nil {
 		panic("failed to connect to database")
 	}
-	DB.AutoMigrate(&Chat{}, &ChatMember{}, &Message{})
+	err = DB.AutoMigrate(&Chat{}, &ChatMember{}, &Message{})
+	if err != nil {
+		log.Printf("failed to migrate: %v", err)
+		return
+	}
+	fmt.Println("Migration done ..")
 }
