@@ -14,26 +14,26 @@ type Username struct {
 	username string
 }
 
-func CreateUserHandler(c *gin.Context) {
-	var newUser db.User
-	err := c.BindJSON(&newUser)
-	if err != nil {
-		log.Printf("error binding JSON:%v", err)
-		c.Status(400)
-		return
-	}
-	err = db.CreateUser(newUser)
-	if err != nil {
-		log.Printf("error inserting user:%v", err)
-		c.Status(400)
-		return
-	} else {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "user inserted successfully",
-		})
-	}
+// func CreateUserHandler(c *gin.Context) {
+// 	var newUser db.User
+// 	err := c.BindJSON(&newUser)
+// 	if err != nil {
+// 		log.Printf("error binding JSON:%v", err)
+// 		c.Status(400)
+// 		return
+// 	}
+// 	err = db.CreateUser(newUser)
+// 	if err != nil {
+// 		log.Printf("error inserting user:%v", err)
+// 		c.Status(400)
+// 		return
+// 	} else {
+// 		c.JSON(http.StatusOK, gin.H{
+// 			"message": "user inserted successfully",
+// 		})
+// 	}
 
-}
+// }
 
 func ReadUserHandler(c *gin.Context) {
 	authorizationHeader := c.GetHeader("Authorization")
