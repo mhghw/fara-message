@@ -47,10 +47,10 @@ type ChatMember struct {
 }
 
 type Message struct {
-	ID       int    `json:"id"`
-	SenderID int    `json:"senderID"`
-	ChatID   int    `json:"chatID"`
-	Content  string `json:"content"`
+	ID       int    `gorm:"primary_key"`
+	SenderID int    `gorm:"foreign_key"`
+	ChatID   int    `gorm:"foreign_key"`
+	Content  string 
 }
 
 // type Gender int8
