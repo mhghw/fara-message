@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -37,7 +38,7 @@ func getUserIDFromToken(tokenString string) (string, error) {
 }
 
 type Message struct {
-	ID       int    `json:"id`
+	ID       int    `json:"id"`
 	SenderID int    `json:"senderID"`
 	ChatID   int    `json:"chatID"`
 	Content  string `json:"content"`
@@ -46,11 +47,11 @@ type Message struct {
 func DeleteMessageHandler(c *gin.Context) {
 	var message Message ///////////////////////////////struct beshe!!!!!!!!!
 	if err := c.BindJSON(&message.ID); err != nil {
-		fmt.Errorf("error binding JSON:%w", err)
+		log.Printf("error binding JSON:%v", err)
 	}
 	err := db.DeleteMessage(message.ID)
 	if err != nil {
-		fmt.Errorf("error:%w", err)
+		log.Printf("error:%v", err)
 		c.Status(400)
 		return
 	}
@@ -62,7 +63,7 @@ func DeleteMessageHandler(c *gin.Context) {
 func SendMessageHandler(c *gin.Context) {
 	var message Message
 	if err := c.BindJSON(&message); err != nil {
-		fmt.Errorf("error binding json:", err)
+		log.Printf("error binding json:%v", err)
 		c.Status(400)
 		return
 	}
@@ -84,7 +85,7 @@ func SendMessageHandler(c *gin.Context) {
 	accessToken := parts[1]
 	userID, err := getUserIDFromToken(accessToken)
 	if err != nil {
-		fmt.Errorf("error get ID:%w", err)
+		log.Printf("error get ID:%v", err)
 		c.Status(400)
 		return
 	}
@@ -93,7 +94,7 @@ func SendMessageHandler(c *gin.Context) {
 
 	err = db.SendMessage(message.ID, message.SenderID, message.ChatID, message.Content)
 	if err != nil {
-		fmt.Errorf("error:%w", err)
+		log.Printf("error:%v", err)
 		c.Status(400)
 		return
 	}

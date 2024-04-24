@@ -1,43 +1,29 @@
 package api
 
 import (
-	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
-	"time"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mhghw/fara-message/db"
 )
 
-type Gender int8
-
-const (
-	Male Gender = iota
-	Female
-)
-
-type User struct {
-	ID          string
-	Username    string
-	FirstName   string
-	LastName    string
-	Password    string
-	Gender      Gender
-	DateOfBirth time.Time
-	CreatedTime time.Time
+type Username struct {
+	username string
 }
 
 func CreateUserHandler(c *gin.Context) {
-	var newUser User
+	var newUser db.User
 	err := c.BindJSON(&newUser)
 	if err != nil {
-		fmt.Errorf("error binding JSON:%w", err)
+		log.Printf("error binding JSON:%v", err)
 		c.Status(400)
 		return
 	}
-	result := db.Create(&newUser)
-	if result.Error != nil {
-		fmt.Errorf("error inserting user:%w", result.Error)
+	err = db.CreateUser(newUser)
+	if err != nil {
+		log.Printf("error inserting user:%v", err)
 		c.Status(400)
 		return
 	} else {
@@ -48,85 +34,122 @@ func CreateUserHandler(c *gin.Context) {
 
 }
 
-func readUser(c *gin.Context) {
-	//read user with username
-	var user User
-	var username string
-	err := c.BindJSON(&username)
-	if err != nil {
-		fmt.Errorf("error binding JSON:%w", err)
-		c.Status(400)
-		return
-	}
-	result := db.First(&user, "username=?", username)
-	if result.Error != nil {
-		fmt.Errorf("error reading user:%w", result.Error)
-		c.Status(400)
-		return
-	} else {
-		convertUserToJSON, err := json.Marshal(struct {
-			User_ID       int
-			Username      string    `json:"username"`
-			Firstname     string    `json:"firstname"`
-			Lastname      string    `json:"lastname"`
-			Gender        string    `json:"gender"`
-			Date_Of_Birth time.Time `json:"date_of_birthday"`
-			Created_Time  time.Time `json:"created_time"`
-		}{user.User_ID, user.Username, user.Firstname, user.Lastname, user.Gender, user.Date_Of_Birth, user.Created_Time})
+func ReadUserHandler(c *gin.Context) {
+	authorizationHeader := c.GetHeader("Authorization")
+	if authorizationHeader == "" {
+		var username Username
+		err := c.BindJSON(&username.username)
 		if err != nil {
-			fmt.Errorf("error marshalling:%w", err)
+			log.Printf("error binding json:%v", err)
 			c.Status(400)
 			return
 		}
-		c.JSON(http.StatusOK, convertUserToJSON)
-	}
-}
-
-func updateUser(c *gin.Context) {
-	//read user with username
-	var user User
-	var username string
-	err := c.BindJSON(&username)
-	if err != nil {
-		fmt.Errorf("error binding JSON:%w", err)
-		c.Status(400)
-		return
-	}
-	result := db.First(&user, "username=?", username)
-	if result.Error != nil {
-		fmt.Errorf("error reading user:%w", result.Error)
-		c.Status(400)
-		return
-	} else {
-
-	}
-}
-
-func deleteUser(c *gin.Context) {
-	//read user with username
-	var user User
-	var username string
-	err := c.BindJSON(&username)
-	if err != nil {
-		fmt.Errorf("error binding JSON:%w", err)
-		c.Status(400)
-		return
-	}
-	result := db.First(&user, "username=?", username)
-	if result.Error != nil {
-		fmt.Errorf("error reading user:%w", result.Error)
-		c.Status(400)
-		return
-	} else {
-		result = db.Delete(&user)
-		if result.Error != nil {
-			fmt.Errorf("error deleting user:%w", result.Error)
+		user, err := db.ReadAnotherUser(username.username)
+		if err != nil {
+			log.Printf("error reading user:%v", err)
 			c.Status(400)
 			return
 		} else {
 			c.JSON(http.StatusOK, gin.H{
-				"message": "user deleted successfully",
+				"username":  user.Username,
+				"firstname": user.FirstName,
+				"lastname":  user.LastName,
 			})
 		}
+	} else {
+		parts := strings.Split(authorizationHeader, " ")
+		if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Unauthorized"})
+			return
+		}
+		accessToken := parts[1]
+		userID, err := getUserIDFromToken(accessToken)
+		if err != nil {
+			log.Printf("error:%v", err)
+			c.Status(400)
+			return
+		}
+		user, err := db.ReadUser(userID)
+		if err != nil {
+			log.Printf("error reading user:%v", err)
+			c.Status(400)
+			return
+		} else {
+			c.JSON(http.StatusOK, gin.H{
+				"username":      user.Username,
+				"firstname":     user.FirstName,
+				"lastname":      user.LastName,
+				"gender":        user.Gender,
+				"date of birth": user.DateOfBirth,
+				"created time":  user.CreatedTime,
+			})
+		}
+	}
+}
+
+func UpdateUserHandler(c *gin.Context) {
+	authorizationHeader := c.GetHeader("Authorization")
+	if authorizationHeader == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Unauthorized"})
+		return
+	}
+	parts := strings.Split(authorizationHeader, " ")
+	if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Unauthorized"})
+		return
+	}
+	accessToken := parts[1]
+	userID, err := getUserIDFromToken(accessToken)
+	if err != nil {
+		log.Printf("error:%v", err)
+		c.Status(400)
+		return
+	}
+	var newInfo db.User
+	err = c.BindJSON(&newInfo)
+	if err != nil {
+		log.Printf("error binding JSON:%v", err)
+		c.Status(400)
+		return
+	}
+	err = db.UpdateUser(userID, newInfo)
+	if err != nil {
+		log.Printf("error updating user:%v", err)
+		c.Status(400)
+		return
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "user updated successfully",
+		})
+	}
+}
+
+func DeleteUserHandler(c *gin.Context) {
+	authorizationHeader := c.GetHeader("Authorization")
+	if authorizationHeader == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Unauthorized"})
+		return
+	}
+	parts := strings.Split(authorizationHeader, " ")
+	if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Unauthorized"})
+		return
+	}
+	accessToken := parts[1]
+	userID, err := getUserIDFromToken(accessToken)
+	if err != nil {
+		log.Printf("error:%v", err)
+		c.Status(400)
+		return
+	}
+	err = db.DeleteUser(userID)
+	if err != nil {
+		log.Printf("error:%v", err)
+		c.Status(400)
+		return
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "user deleted successfully",
+		})
 	}
 }

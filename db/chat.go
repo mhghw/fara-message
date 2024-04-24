@@ -33,8 +33,8 @@ func NewChat(chatName string, chatType ChatType, user []User) error {
 	return nil
 }
 
-func GetChatMessages(ChatID int64) ([]MessageInformation, error) {
-	var messages []MessageInformation
+func GetChatMessages(ChatID int64) ([]Message, error) {
+	var messages []Message
 	if err := DB.Where("chat_id = ?", ChatID).Find(&messages).Error; err != nil {
 		return nil, fmt.Errorf("no  message found for chat %w", err)
 	}
