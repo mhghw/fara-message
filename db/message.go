@@ -4,7 +4,7 @@ func DeleteMessage(messageID int) error {
 	var message Message
 	message.ID = messageID
 	result := DB.Where("ID=?", message.ID).Delete(&Message{})
-	if result.Error != nil { /////check!!
+	if result.Error != nil { 
 		return result.Error
 	}
 	return nil

@@ -33,7 +33,6 @@ func getUserIDFromToken(tokenString string) (string, error) {
 	if expirationTime.Before(time.Now()) {
 		return "", errors.New("token has expired")
 	}
-
 	return userID, nil
 }
 
@@ -45,7 +44,7 @@ type Message struct {
 }
 
 func DeleteMessageHandler(c *gin.Context) {
-	var message Message ///////////////////////////////struct beshe!!!!!!!!!
+	var message Message
 	if err := c.BindJSON(&message.ID); err != nil {
 		log.Printf("error binding JSON:%v", err)
 	}

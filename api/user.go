@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"strings"
@@ -50,11 +51,17 @@ func ReadUserHandler(c *gin.Context) {
 			c.Status(400)
 			return
 		} else {
-			c.JSON(http.StatusOK, gin.H{
-				"username":  user.Username,
-				"firstname": user.FirstName,
-				"lastname":  user.LastName,
-			})
+			var userInfo AnotherUserInfo
+			userInfo.Username=user.Username
+			userInfo.FirstName=user.FirstName
+			userInfo.LastName=user.LastName
+			convertUserToJSON,err:=json.Marshal(userInfo)
+			if err!=nil {
+				log.Printf("error marshaling:%v",err)
+				c.Status(400)
+				return
+			}
+			c.JSON(http.StatusOK, convertUserToJSON)
 		}
 	} else {
 		parts := strings.Split(authorizationHeader, " ")
@@ -75,14 +82,20 @@ func ReadUserHandler(c *gin.Context) {
 			c.Status(400)
 			return
 		} else {
-			c.JSON(http.StatusOK, gin.H{
-				"username":      user.Username,
-				"firstname":     user.FirstName,
-				"lastname":      user.LastName,
-				"gender":        user.Gender,
-				"date of birth": user.DateOfBirth,
-				"created time":  user.CreatedTime,
-			})
+			var userInfo UserInfo
+			userInfo.Username=user.Username
+			userInfo.FirstName=user.FirstName
+			userInfo.LastName=user.LastName
+			userInfo.Gender=Gender(user.Gender)
+			userInfo.DateOfBirth=user.DateOfBirth
+			userInfo.CreatedTime=user.CreatedTime
+			convertUserToJSON,err:=json.Marshal(userInfo)
+			if err!=nil {
+				log.Printf("error marshaling:%v",err)
+				c.Status(400)
+				return
+			}
+			c.JSON(http.StatusOK,convertUserToJSON)
 		}
 	}
 }

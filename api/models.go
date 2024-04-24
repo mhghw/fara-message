@@ -1,6 +1,9 @@
 package api
 
-import "github.com/mhghw/fara-message/db"
+import (
+	"github.com/mhghw/fara-message/db"
+	"time"
+)
 
 // type loginBody struct {
 // 	Username string `json:"username"`
@@ -21,4 +24,24 @@ type NewDirectChatRequest struct {
 
 type Chat struct {
 	ID int
+}
+
+type AnotherUserInfo struct{
+	Username    string
+	FirstName   string
+	LastName    string
+}
+
+type Gender int8
+const (
+	Male Gender = iota
+	Female
+)
+type UserInfo struct{
+	Username    string
+	FirstName   string
+	LastName    string
+	Gender      Gender
+	DateOfBirth time.Time
+	CreatedTime time.Time
 }
