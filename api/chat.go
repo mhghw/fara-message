@@ -9,48 +9,41 @@ import (
 	"github.com/mhghw/fara-message/db"
 )
 
-type ChatResponse struct {
-	ID       int       `json:"chatId"`
-	Name     string    `json:"chatName"`
-	Messages []Message `json:"messages"`
-	Users    []User    `json:"users"`
-}
-
 type ChatRequest struct {
 	ID   int    `json:"chatId"`
 	Name string `json:"chatName"`
 }
-type NewGroupChatRequest struct {
+type GroupChatRequest struct {
 	ChatName string    `json:"chatName"`
 	Users    []db.User `json:"users"`
 }
-type NewDirectChatRequest struct {
+type DirectChatRequest struct {
 	Users []db.User `json:"users"`
 }
 
 func NewDirectChatHandler(c *gin.Context) {
-	var requestBody NewDirectChatRequest
+	var requestBody DirectChatRequest
 	err := c.BindJSON(&requestBody)
 	if err != nil {
 		log.Print("failed to bind json, ", err)
 		return
 	}
 
-	if err := db.NewChat("", db.Direct, requestBody.Users); err != nil {
+	if err := db.Mysql.NewChat("", db.Direct, requestBody.Users); err != nil {
 		log.Print("failed to create chat, ", err)
 		return
 	}
 }
 
 func NewGroupChatHandler(c *gin.Context) {
-	var requestBody NewGroupChatRequest
+	var requestBody GroupChatRequest
 	err := c.BindJSON(&requestBody)
 	if err != nil {
 		log.Print("failed to bind json, ", err)
 		return
 	}
 
-	if err := db.NewChat(requestBody.ChatName, db.Group, requestBody.Users); err != nil {
+	if err := db.Mysql.NewChat(requestBody.ChatName, db.Group, requestBody.Users); err != nil {
 		log.Printf("failed to create chat: %v", err)
 		return
 	}
@@ -64,7 +57,7 @@ func GetChatMessagesHandler(c *gin.Context) {
 		return
 	}
 	chatID := requestBody.ID
-	messages, err := db.GetChatMessages(int64(chatID))
+	messages, err := db.Mysql.GetChatMessages(int64(chatID))
 	if err != nil {
 		log.Print(err)
 		return
@@ -81,7 +74,7 @@ func GetChatMessagesHandler(c *gin.Context) {
 func GetUsersChatsHandler(c *gin.Context) {
 	userIDString := c.Param("id")
 	userID, _ := strconv.Atoi(userIDString)
-	chatMembers, err := db.GetUsersChatMembers(userID)
+	chatMembers, err := db.Mysql.GetUsersChatMembers(userID)
 	if err != nil {
 		log.Print("failed to get users chat members")
 		return

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"math/rand"
 	"net/http"
 	"strings"
 	"time"
@@ -65,17 +64,6 @@ func RegisterHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, userTokenJSON)
 }
 
-func generateID() string {
-	const charset = "0123456789"
-	rand.NewSource(10)
-	id := make([]byte, 5)
-	for idx := range id {
-		id[idx] = charset[rand.Intn(len(charset))]
-	}
-
-	return string(id)
-}
-
 // other validation fields will be added...
 func validateUser(form RegisterForm) error {
 	if len(form.Password) < 8 {
@@ -119,5 +107,3 @@ func convertRegisterFormToUser(form RegisterForm) (db.User, error) {
 
 	return user, nil
 }
-
-// handle func for register,receives a json string according to the RegisterForm struct and generate a JWT with ID parameter

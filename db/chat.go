@@ -24,20 +24,20 @@ type ChatMember struct {
 	LeftTime   time.Time
 }
 type ChatType struct {
-	chatType int8
+	chatType int
 }
 
-func (c *ChatType) Int() int8 {
+func (c *ChatType) Int() int {
 	return c.chatType
 }
 
 var (
-	Direct  = ChatType{0}
-	Group   = ChatType{1}
-	Unknown = ChatType{-1}
+	Direct  = ChatType{chatType: 0}
+	Group   = ChatType{chatType: 1}
+	Unknown = ChatType{chatType: -1}
 )
 
-func NewChat(chatName string, chatType ChatType, user []User) error {
+func (d *Database) NewChat(chatName string, chatType ChatType, user []User) error {
 	chat := Chat{
 		Name:        chatName,
 		Type:        chatType,
@@ -52,28 +52,28 @@ func NewChat(chatName string, chatType ChatType, user []User) error {
 			UserID:     int64(userID),
 		}
 
-		if err := DB.Create(&chatMembers).Error; err != nil {
-			DB.Delete(&chatMembers)
+		if err := Mysql.db.Create(&chatMembers).Error; err != nil {
+			Mysql.db.Delete(&chatMembers)
 			return errors.New("cannot create chat member")
 
 		}
 	}
 
-	DB.Create(&chat)
+	Mysql.db.Create(&chat)
 	return nil
 }
 
-func GetChatMessages(ChatID int64) ([]Message, error) {
+func (d *Database) GetChatMessages(ChatID int64) ([]Message, error) {
 	var messages []Message
-	if err := DB.Where("chat_id = ?", ChatID).Find(&messages).Error; err != nil {
+	if err := Mysql.db.Where("chat_id = ?", ChatID).Find(&messages).Error; err != nil {
 		return nil, fmt.Errorf("no  message found for chat %w", err)
 	}
 	return messages, nil
 }
 
-func GetUsersChatMembers(userID int) ([]ChatMember, error) {
+func (d *Database) GetUsersChatMembers(userID int) ([]ChatMember, error) {
 	var usersChats []ChatMember
-	if err := DB.Where("user_id = ?", userID).Find(&usersChats).Error; err != nil {
+	if err := Mysql.db.Where("user_id = ?", userID).Find(&usersChats).Error; err != nil {
 		return nil, fmt.Errorf("no  chat found for user %w", err)
 	}
 	return usersChats, nil

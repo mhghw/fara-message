@@ -10,3 +10,10 @@ type loginBody struct {
 type HTTPError struct {
 	Message string `json:message`
 }
+
+type ChatResponse struct {
+	ID       int       `json:"chatId"`
+	Name     string    `json:"chatName"`
+	Messages []Message `json:"messages"`
+	Users    []User    `json:"users"`
+}
