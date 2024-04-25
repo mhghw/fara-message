@@ -8,7 +8,7 @@ import (
 	"github.com/mhghw/fara-message/db"
 )
 
-func AuthMiddleware(c *gin.Context) {
+func AuthMiddlewareHandler(c *gin.Context) {
 	tokenString := c.GetHeader("Authorization")
 	if tokenString == "" {
 		c.JSON(http.StatusForbidden, gin.H{
