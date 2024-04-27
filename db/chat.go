@@ -52,20 +52,20 @@ func (d *Database) NewChat(chatName string, chatType ChatType, user []User) erro
 			UserID:     int64(userID),
 		}
 
-		if err := Mysql.db.Create(&chatMembers).Error; err != nil {
-			Mysql.db.Delete(&chatMembers)
+		if err := d.db.Create(&chatMembers).Error; err != nil {
+			d.db.Delete(&chatMembers)
 			return errors.New("cannot create chat member")
 
 		}
 	}
 
-	Mysql.db.Create(&chat)
+	d.db.Create(&chat)
 	return nil
 }
 
 func (d *Database) GetChatMessages(ChatID int64) ([]Message, error) {
 	var messages []Message
-	if err := Mysql.db.Where("chat_id = ?", ChatID).Find(&messages).Error; err != nil {
+	if err := d.db.Where("chat_id = ?", ChatID).Find(&messages).Error; err != nil {
 		return nil, fmt.Errorf("no  message found for chat %w", err)
 	}
 	return messages, nil
@@ -73,7 +73,7 @@ func (d *Database) GetChatMessages(ChatID int64) ([]Message, error) {
 
 func (d *Database) GetUsersChatMembers(userID int) ([]ChatMember, error) {
 	var usersChats []ChatMember
-	if err := Mysql.db.Where("user_id = ?", userID).Find(&usersChats).Error; err != nil {
+	if err := d.db.Where("user_id = ?", userID).Find(&usersChats).Error; err != nil {
 		return nil, fmt.Errorf("no  chat found for user %w", err)
 	}
 	return usersChats, nil

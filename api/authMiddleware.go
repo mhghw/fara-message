@@ -26,7 +26,7 @@ func AuthMiddlewareHandler(c *gin.Context) {
 		c.AbortWithStatus(http.StatusForbidden)
 		return
 	}
-	_, err = db.UsersDB.GetUser(userID)
+	_, err = db.Mysql.ReadUser(userID)
 	if err != nil {
 		log.Print("user ID is not in the DataBase: %w", err)
 		c.AbortWithStatus(http.StatusForbidden)

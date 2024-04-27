@@ -31,7 +31,7 @@ func changePassword(c *gin.Context) {
 		return
 	}
 
-	userUnderReview, err := db.UsersDB.GetUserByUsername(userData.Username)
+	userUnderReview, err := db.Mysql.ReadAnotherUser(userData.Username)
 	if err != nil {
 		log.Printf("error getting user from database:%v", err)
 		c.Status(400)

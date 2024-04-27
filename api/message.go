@@ -48,7 +48,7 @@ func DeleteMessageHandler(c *gin.Context) {
 	if err := c.BindJSON(&message.ID); err != nil {
 		log.Printf("error binding JSON:%v", err)
 	}
-	err := db.DeleteMessage(message.ID)
+	err := db.Mysql.DeleteMessage(message.ID)
 	if err != nil {
 		log.Printf("error:%v", err)
 		c.Status(400)
@@ -91,7 +91,7 @@ func SendMessageHandler(c *gin.Context) {
 	ID, _ := strconv.Atoi(userID)
 	message.SenderID = ID
 
-	err = db.SendMessage(message.ID, message.SenderID, message.ChatID, message.Content)
+	err = db.Mysql.SendMessage(message.ID, message.SenderID, message.ChatID, message.Content)
 	if err != nil {
 		log.Printf("error:%v", err)
 		c.Status(400)

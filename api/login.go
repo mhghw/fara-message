@@ -36,7 +36,7 @@ func authenticateUser(c *gin.Context) {
 	}
 
 	//checking entered data with data that is already stored
-	userUnderReveiw, err := db.UsersDB.GetUserByUsername(loginData.Username)
+	userUnderReveiw, err := db.Mysql.ReadAnotherUser(loginData.Username)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, errIncorrectUserOrPassJSON)
 	}

@@ -45,7 +45,7 @@ func ReadUserHandler(c *gin.Context) {
 			c.Status(400)
 			return
 		}
-		user, err := db.ReadAnotherUser(username.Username)
+		user, err := db.Mysql.ReadAnotherUser(username.Username)
 		if err != nil {
 			log.Printf("error reading user:%v", err)
 			c.Status(400)
@@ -76,7 +76,7 @@ func ReadUserHandler(c *gin.Context) {
 			c.Status(400)
 			return
 		}
-		user, err := db.ReadUser(userID)
+		user, err := db.Mysql.ReadUser(userID)
 		if err != nil {
 			log.Printf("error reading user:%v", err)
 			c.Status(400)
@@ -125,7 +125,7 @@ func UpdateUserHandler(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	err = db.UpdateUser(userID, newInfo)
+	err = db.Mysql.UpdateUser(userID, newInfo)
 	if err != nil {
 		log.Printf("error updating user:%v", err)
 		c.Status(400)
@@ -155,7 +155,7 @@ func DeleteUserHandler(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	err = db.DeleteUser(userID)
+	err = db.Mysql.DeleteUser(userID)
 	if err != nil {
 		log.Printf("error:%v", err)
 		c.Status(400)

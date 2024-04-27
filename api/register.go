@@ -60,7 +60,7 @@ func RegisterHandler(c *gin.Context) {
 		return
 	}
 
-	db.UsersDB.CreateUser(user)
+	db.Mysql.CreateUser(user)
 	c.JSON(http.StatusOK, userTokenJSON)
 }
 

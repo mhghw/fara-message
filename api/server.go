@@ -9,10 +9,10 @@ import (
 func RunWebServer(port int) error {
 	addr := fmt.Sprintf(":%d", port)
 	router := gin.New()
-	router.POST("/user/register", Register)
+	router.POST("/user/register", RegisterHandler)
 	router.POST("/user/change_password", changePassword)
 	router.POST("/login", authenticateUser)
-	router.Use(AuthMiddleware)
+	router.Use(AuthMiddlewareHandler)
 	// router.POST("/user/create",CreateUserHandler)
 	router.POST("/user/read", ReadUserHandler)
 	router.POST("/user/update", UpdateUserHandler)
@@ -20,9 +20,9 @@ func RunWebServer(port int) error {
 	router.POST("/user/edit", editUser)
 	router.POST("/send/message", SendMessageHandler)
 	router.DELETE("/delete/message", DeleteMessageHandler)
-	router.POST("/new_direct_chat", NewDirectChat)
-	router.POST("/new_group_chat", NewGroupChat)
-	router.GET("/chat/:id/messages", GetChatMessages)
+	router.POST("/new_direct_chat", NewDirectChatHandler)
+	router.POST("/new_group_chat", NewGroupChatHandler)
+	router.GET("/chat/:id/messages", GetChatMessagesHandler)
 	err := router.Run(addr)
 	return err
 }
