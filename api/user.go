@@ -83,10 +83,11 @@ func ReadUserHandler(c *gin.Context) {
 			return
 		} else {
 			var userInfo UserInfo
+
 			userInfo.Username = user.Username
 			userInfo.FirstName = user.FirstName
 			userInfo.LastName = user.LastName
-			userInfo.Gender = Gender(user.Gender)
+			userInfo.Gender = int(user.Gender)
 			userInfo.DateOfBirth = user.DateOfBirth
 			userInfo.CreatedTime = user.CreatedTime
 			convertUserToJSON, err := json.Marshal(userInfo)
@@ -118,14 +119,27 @@ func UpdateUserHandler(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	var newInfo db.User
+	var newInfo UserInfo
 	err = c.BindJSON(&newInfo)
 	if err != nil {
 		log.Printf("error binding JSON:%v", err)
 		c.Status(400)
 		return
 	}
-	err = db.Mysql.UpdateUser(userID, newInfo)
+	gender := db.Male
+	if newInfo.Gender != 0 {
+		gender = db.Female
+	}
+
+	dbUserInfo := db.UserInfo{
+		Username:    newInfo.Username,
+		FirstName:   newInfo.FirstName,
+		LastName:    newInfo.LastName,
+		Gender:      gender,
+		DateOfBirth: newInfo.DateOfBirth,
+		CreatedTime: newInfo.CreatedTime,
+	}
+	err = db.Mysql.UpdateUser(userID, dbUserInfo)
 	if err != nil {
 		log.Printf("error updating user:%v", err)
 		c.Status(400)

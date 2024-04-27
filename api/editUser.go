@@ -40,7 +40,7 @@ func editUser(c *gin.Context) {
 
 	userUnderReview.FirstName = userInfo.Firstname
 	userUnderReview.LastName = userInfo.Lastname
-	err = db.Mysql.UpdateUser(userUnderReview)
+	err = db.Mysql.UpdateUser(userUnderReview.ID, userUnderReview)
 	if err != nil {
 		log.Printf("error updating user:%v", err)
 		c.Status(400)

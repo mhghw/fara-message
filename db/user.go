@@ -17,8 +17,8 @@ func (d *Database) ReadAnotherUser(username string) (User, error) {
 	return user, nil
 }
 
-func (d *Database) ReadUser(ID string) (User, error) {
-	var user User
+func (d *Database) ReadUser(ID string) (UserInfo, error) {
+	var user UserInfo
 	result := d.db.First(&user, "ID=?", ID)
 	if result.Error != nil {
 		return user, result.Error
@@ -26,7 +26,7 @@ func (d *Database) ReadUser(ID string) (User, error) {
 	return user, nil
 }
 
-func (d *Database) UpdateUser(ID string, newInfo User) error {
+func (d *Database) UpdateUser(ID string, newInfo UserInfo) error {
 	result := d.db.Model(&User{}).Where("ID=?", ID).Updates(User{FirstName: newInfo.FirstName, LastName: newInfo.LastName, Gender: newInfo.Gender, DateOfBirth: newInfo.DateOfBirth})
 	if result.Error != nil {
 		return result.Error
