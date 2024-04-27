@@ -4,21 +4,25 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	send_message "github.com/mhghw/fara-message/message"
 )
 
 func RunWebServer(port int) error {
 	addr := fmt.Sprintf(":%d", port)
 	router := gin.New()
-	router.POST("/register", RegisterHandler)
-	router.POST("/login", login)
-	router.Use(AuthMiddlewareHandler)
+	router.POST("/user/register", Register)
 	router.POST("/user/change_password", changePassword)
+	router.POST("/login", authenticateUser)
+	router.Use(AuthMiddleware)
+	// router.POST("/user/create",CreateUserHandler)
+	router.POST("/user/read", ReadUserHandler)
+	router.POST("/user/update", UpdateUserHandler)
+	router.POST("/user/delete", DeleteUserHandler)
 	router.POST("/user/edit", editUser)
-	router.POST("/chat/direct", NewDirectChatHandler)
-	router.POST("/chat/group", NewGroupChatHandler)
-	router.GET("/chat/:id/messages", GetChatMessagesHandler)
-	router.POST("/send/message", send_message.SendMessage)
+	router.POST("/send/message", SendMessageHandler)
+	router.DELETE("/delete/message", DeleteMessageHandler)
+	router.POST("/new_direct_chat", NewDirectChat)
+	router.POST("/new_group_chat", NewGroupChat)
+	router.GET("/chat/:id/messages", GetChatMessages)
 	err := router.Run(addr)
 	return err
 }

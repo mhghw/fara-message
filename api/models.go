@@ -1,14 +1,13 @@
 package api
 
-import "github.com/mhghw/fara-message/db"
+import (
+	"time"
 
-type loginBody struct {
-	Username string `json:username`
-	Password string `json:password`
-}
+	"github.com/mhghw/fara-message/db"
+)
 
 type HTTPError struct {
-	Message string `json:message`
+	Message string `json:"message"`
 }
 
 type ChatResponse struct {
@@ -16,4 +15,26 @@ type ChatResponse struct {
 	Name     string    `json:"chatName"`
 	Messages []Message `json:"messages"`
 	Users    []User    `json:"users"`
+}
+
+type AnotherUserInfo struct {
+	Username  string `json:"username"`
+	FirstName string `json:"firstname"`
+	LastName  string `json:"lastname"`
+}
+
+type Gender int8
+
+const (
+	Male Gender = iota
+	Female
+)
+
+type UserInfo struct {
+	Username    string    `json:"username"`
+	FirstName   string    `json:"firstname"`
+	LastName    string    `json:"lastname"`
+	Gender      Gender    `json:"gender"`
+	DateOfBirth time.Time `json:"dateOfBirth"`
+	CreatedTime time.Time `json:"createdTime"`
 }
