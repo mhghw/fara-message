@@ -1,8 +1,9 @@
 package api
 
 import (
-	"github.com/mhghw/fara-message/db"
 	"time"
+
+	"github.com/mhghw/fara-message/db"
 )
 
 type HTTPError struct {
@@ -21,22 +22,24 @@ type Chat struct {
 	ID int
 }
 
-type AnotherUserInfo struct{
-	Username    string
-	FirstName   string
-	LastName    string
+type AnotherUserInfo struct {
+	Username  string `json:"username"`
+	FirstName string `json:"firstname"`
+	LastName  string `json:"lastname"`
 }
 
 type Gender int8
+
 const (
 	Male Gender = iota
 	Female
 )
-type UserInfo struct{
-	Username    string
-	FirstName   string
-	LastName    string
-	Gender      Gender
-	DateOfBirth time.Time
-	CreatedTime time.Time
+
+type UserInfo struct {
+	Username    string    `json:"username"`
+	FirstName   string    `json:"firstname"`
+	LastName    string    `json:"lastname"`
+	Gender      Gender    `json:"gender"`
+	DateOfBirth time.Time `json:"dateOfBirth"`
+	CreatedTime time.Time `json:"createdTime"`
 }

@@ -10,8 +10,8 @@ import (
 	"github.com/mhghw/fara-message/db"
 )
 
-type Username struct {
-	username string
+type UsernameType struct {
+	Username string `json:"username"`
 }
 
 // func CreateUserHandler(c *gin.Context) {
@@ -38,26 +38,26 @@ type Username struct {
 func ReadUserHandler(c *gin.Context) {
 	authorizationHeader := c.GetHeader("Authorization")
 	if authorizationHeader == "" {
-		var username Username
-		err := c.BindJSON(&username.username)
+		var username UsernameType
+		err := c.BindJSON(&username)
 		if err != nil {
 			log.Printf("error binding json:%v", err)
 			c.Status(400)
 			return
 		}
-		user, err := db.ReadAnotherUser(username.username)
+		user, err := db.ReadAnotherUser(username.Username)
 		if err != nil {
 			log.Printf("error reading user:%v", err)
 			c.Status(400)
 			return
 		} else {
 			var userInfo AnotherUserInfo
-			userInfo.Username=user.Username
-			userInfo.FirstName=user.FirstName
-			userInfo.LastName=user.LastName
-			convertUserToJSON,err:=json.Marshal(userInfo)
-			if err!=nil {
-				log.Printf("error marshaling:%v",err)
+			userInfo.Username = user.Username
+			userInfo.FirstName = user.FirstName
+			userInfo.LastName = user.LastName
+			convertUserToJSON, err := json.Marshal(userInfo)
+			if err != nil {
+				log.Printf("error marshaling:%v", err)
 				c.Status(400)
 				return
 			}
@@ -83,19 +83,19 @@ func ReadUserHandler(c *gin.Context) {
 			return
 		} else {
 			var userInfo UserInfo
-			userInfo.Username=user.Username
-			userInfo.FirstName=user.FirstName
-			userInfo.LastName=user.LastName
-			userInfo.Gender=Gender(user.Gender)
-			userInfo.DateOfBirth=user.DateOfBirth
-			userInfo.CreatedTime=user.CreatedTime
-			convertUserToJSON,err:=json.Marshal(userInfo)
-			if err!=nil {
-				log.Printf("error marshaling:%v",err)
+			userInfo.Username = user.Username
+			userInfo.FirstName = user.FirstName
+			userInfo.LastName = user.LastName
+			userInfo.Gender = Gender(user.Gender)
+			userInfo.DateOfBirth = user.DateOfBirth
+			userInfo.CreatedTime = user.CreatedTime
+			convertUserToJSON, err := json.Marshal(userInfo)
+			if err != nil {
+				log.Printf("error marshaling:%v", err)
 				c.Status(400)
 				return
 			}
-			c.JSON(http.StatusOK,convertUserToJSON)
+			c.JSON(http.StatusOK, convertUserToJSON)
 		}
 	}
 }
