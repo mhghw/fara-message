@@ -53,20 +53,20 @@ type Message struct {
 	Content  string
 }
 
-// type Gender int8
+type Gender int8
 
-// const (
-// 	Male Gender = iota
-// 	Female
-// )
+const (
+	Male Gender = iota
+	Female
+)
 
-// type User struct {
-// 	ID          string
-// 	Username    string
-// 	FirstName   string
-// 	LastName    string
-// 	Password    string
-// 	Gender      Gender
-// 	DateOfBirth time.Time
-// 	CreatedTime time.Time
-// }
+type User struct {
+	ID          string `gorm:"primary_key"`
+	Username    string
+	FirstName   string
+	LastName    string
+	Password    string
+	Gender      Gender
+	DateOfBirth time.Time
+	CreatedTime time.Time
+}
