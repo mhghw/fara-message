@@ -87,7 +87,7 @@ func ReadUserHandler(c *gin.Context) {
 			userInfo.Username = user.Username
 			userInfo.FirstName = user.FirstName
 			userInfo.LastName = user.LastName
-			userInfo.Gender = int(user.Gender)
+			userInfo.Gender = user.Gender
 			userInfo.DateOfBirth = user.DateOfBirth
 			userInfo.CreatedTime = user.CreatedTime
 			convertUserToJSON, err := json.Marshal(userInfo)
@@ -126,10 +126,7 @@ func UpdateUserHandler(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	gender := db.Male
-	if newInfo.Gender != 0 {
-		gender = db.Female
-	}
+	gender := newInfo.Gender
 
 	dbUserInfo := db.UserInfo{
 		Username:    newInfo.Username,

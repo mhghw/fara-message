@@ -36,7 +36,7 @@ func RegisterHandler(c *gin.Context) {
 	}
 	err = validateUser(requestBody)
 	if err != nil {
-		log.Print("failed to validate user", err)
+		log.Print("failed to validate user: ", err)
 		return
 	}
 
@@ -66,6 +66,26 @@ func RegisterHandler(c *gin.Context) {
 
 // other validation fields will be added...
 func validateUser(form RegisterForm) error {
+	if len(form.Username) < 5 || form.Username == "" {
+		return errors.New("username length must be more than 5 characters")
+	}
+	if len(form.FirstName) < 3 || form.FirstName == "" {
+		return errors.New("first name length must be more than 3 characters")
+	}
+	if len(form.LastName) < 3 || form.LastName == "" {
+		return errors.New("last name length must be more than 3 characters")
+	}
+	if form.Gender == "" {
+		return errors.New("please fill the gender section")
+	}
+	log.Println(strings.ToLower(form.Gender))
+	if strings.ToLower(form.Gender) != "male" && strings.ToLower(form.Gender) != "female" && strings.ToLower(form.Gender) != "non binary" {
+		return errors.New("wrong gender type ")
+	}
+	if form.DateOfBirth == "" {
+		return errors.New("please fill the date of birth section")
+	}
+
 	if len(form.Password) < 8 {
 		return errors.New("password is too short")
 	}
@@ -82,6 +102,8 @@ func assignGender(sex string) db.Gender {
 		gender = db.Male
 	case "female":
 		gender = db.Female
+	case "non binary":
+		gender = db.NonBinary
 	}
 	return gender
 

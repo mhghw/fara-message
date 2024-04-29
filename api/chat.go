@@ -76,8 +76,14 @@ func GetUsersChatsHandler(c *gin.Context) {
 	userID, _ := strconv.Atoi(userIDString)
 	chatMembers, err := db.Mysql.GetUsersChatMembers(userID)
 	if err != nil {
-		log.Print("failed to get users chat members")
+		log.Printf("failed to get users chats: %v", err)
 		return
 	}
-	c.JSON(200, chatMembers)
+
+	result, err := db.Mysql.GetUsersChatIDAndChatName(chatMembers)
+	if err != nil {
+		log.Printf("failed to get users chats: %v", err)
+		return
+	}
+	c.JSON(200, result)
 }

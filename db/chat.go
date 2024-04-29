@@ -8,7 +8,7 @@ import (
 )
 
 type Chat struct {
-	ID          int64  `gorm:"primary_key"`
+	ID          int    `gorm:"primary_key"`
 	Name        string `gorm:"chat_name;default:' '"`
 	CreatedTime time.Time
 	DeletedTime time.Time
@@ -16,15 +16,19 @@ type Chat struct {
 }
 
 type ChatMember struct {
-	UserID     int64 `gorm:"foreign_key"`
+	UserID     int `gorm:"foreign_key"`
 	User       User
-	ChatID     int64 `gorm:"foreign_key"`
+	ChatID     int `gorm:"foreign_key"`
 	Chat       Chat
 	JoinedTime time.Time
 	LeftTime   time.Time
 }
 type ChatType struct {
 	chatType int
+}
+type ChatIDAndChatName struct {
+	ChatID   int
+	ChatName string
 }
 
 func (c *ChatType) Int() int {
@@ -49,7 +53,7 @@ func (d *Database) NewChat(chatName string, chatType ChatType, user []User) erro
 		chatMembers[i] = ChatMember{
 			JoinedTime: time.Now(),
 			ChatID:     chat.ID,
-			UserID:     int64(userID),
+			UserID:     int(userID),
 		}
 
 		if err := d.db.Create(&chatMembers).Error; err != nil {
@@ -77,4 +81,18 @@ func (d *Database) GetUsersChatMembers(userID int) ([]ChatMember, error) {
 		return nil, fmt.Errorf("no  chat found for user %w", err)
 	}
 	return usersChats, nil
+}
+
+func (d *Database) GetUsersChatIDAndChatName(chatMember []ChatMember) ([]ChatIDAndChatName, error) {
+	var result []ChatIDAndChatName
+	for _, chat := range chatMember {
+		result = append(result, ChatIDAndChatName{
+			ChatID:   chat.ChatID,
+			ChatName: chat.Chat.Name,
+		})
+	}
+	if len(result) == 0 {
+		return result, errors.New("no chat found for user ")
+	}
+	return result, nil
 }

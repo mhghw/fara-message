@@ -28,21 +28,21 @@ type UserInfo struct {
 	Username    string    `json:"username"`
 	FirstName   string    `json:"firstname"`
 	LastName    string    `json:"lastname"`
-	Gender      int       `json:"gender"`
+	Gender      db.Gender `json:"gender"`
 	DateOfBirth time.Time `json:"dateOfBirth"`
 	CreatedTime time.Time `json:"createdTime"`
 }
 
 func convertUserInfo(newInfo UserInfo) db.UserInfo {
-	gender := db.Male
-	if newInfo.Gender != 0 {
-		gender = db.Female
-	}
+	// gender := db.Male
+	// if newInfo.Gender != 0 {
+	// 	gender = db.Female
+	// }
 	return db.UserInfo{
 		Username:    newInfo.Username,
 		FirstName:   newInfo.FirstName,
 		LastName:    newInfo.LastName,
-		Gender:      gender,
+		Gender:      newInfo.Gender,
 		DateOfBirth: newInfo.DateOfBirth,
 		CreatedTime: newInfo.CreatedTime,
 	}
