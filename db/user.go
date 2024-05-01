@@ -11,8 +11,8 @@ func (d *Database) CreateUser(user User) error {
 	return nil
 }
 
-func (d *Database) ReadAnotherUser(username string) (User, error) {
-	var user User
+func (d *Database) ReadUserByUsername(username string) (UserTable, error) {
+	var user UserTable
 	result := d.db.First(&user, "username=?", username)
 	if result.Error != nil {
 		return user, fmt.Errorf("failed to read another user: %w", result.Error)
@@ -20,8 +20,8 @@ func (d *Database) ReadAnotherUser(username string) (User, error) {
 	return user, nil
 }
 
-func (d *Database) ReadUser(ID string) (UserInfo, error) {
-	var user UserInfo
+func (d *Database) ReadUser(ID string) (UserTable, error) {
+	var user UserTable
 	result := d.db.First(&user, "ID=?", ID)
 	if result.Error != nil {
 		return user, fmt.Errorf("failed to read user: %w", result.Error)
@@ -29,8 +29,9 @@ func (d *Database) ReadUser(ID string) (UserInfo, error) {
 	return user, nil
 }
 
-func (d *Database) UpdateUser(ID string, newInfo UserInfo) error {
-	result := d.db.Model(&User{}).Where("ID=?", ID).Updates(User{FirstName: newInfo.FirstName, LastName: newInfo.LastName, Gender: newInfo.Gender, DateOfBirth: newInfo.DateOfBirth})
+func (d *Database) UpdateUser(ID string, newInfo UserTable) error {
+
+	result := d.db.Model(&UserTable{}).Where("ID=?", ID).Updates(UserTable{FirstName: newInfo.FirstName, LastName: newInfo.LastName, Password: newInfo.Password, Gender: newInfo.Gender, DateOfBirth: newInfo.DateOfBirth})
 	if result.Error != nil {
 		return fmt.Errorf("failed to Update user: %w", result.Error)
 	}
@@ -38,7 +39,7 @@ func (d *Database) UpdateUser(ID string, newInfo UserInfo) error {
 }
 
 func (d *Database) DeleteUser(ID string) error {
-	var user User
+	var user UserTable
 	result := d.db.First(&user, "ID=?", ID)
 	if result.Error != nil {
 		return fmt.Errorf("failed to find user to delete: %w", result.Error)

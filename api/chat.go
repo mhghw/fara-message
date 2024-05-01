@@ -14,11 +14,11 @@ type ChatRequest struct {
 	Name string `json:"chatName"`
 }
 type GroupChatRequest struct {
-	ChatName string    `json:"chatName"`
-	Users    []db.User `json:"users"`
+	ChatName string         `json:"chatName"`
+	Users    []db.UserTable `json:"users"`
 }
 type DirectChatRequest struct {
-	Users []db.User `json:"users"`
+	Users []db.UserTable `json:"users"`
 }
 
 func NewDirectChatHandler(c *gin.Context) {

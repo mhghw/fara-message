@@ -7,53 +7,19 @@ import (
 	"time"
 )
 
-type Chat struct {
-	ID          int    `gorm:"primary_key"`
-	Name        string `gorm:"chat_name;default:' '"`
-	CreatedTime time.Time
-	DeletedTime time.Time
-	Type        ChatType
-}
-
-type ChatMember struct {
-	UserID     int `gorm:"foreign_key"`
-	User       User
-	ChatID     int `gorm:"foreign_key"`
-	Chat       Chat
-	JoinedTime time.Time
-	LeftTime   time.Time
-}
-type ChatType struct {
-	chatType int
-}
-type ChatIDAndChatName struct {
-	ChatID   int
-	ChatName string
-}
-
-func (c *ChatType) Int() int {
-	return c.chatType
-}
-
-var (
-	Direct  = ChatType{chatType: 0}
-	Group   = ChatType{chatType: 1}
-	Unknown = ChatType{chatType: -1}
-)
-
-func (d *Database) NewChat(chatName string, chatType ChatType, user []User) error {
+func (d *Database) NewChat(chatName string, chatType ChatType, userTable []UserTable) error {
 	chat := Chat{
 		Name:        chatName,
 		Type:        chatType,
 		CreatedTime: time.Now(),
 	}
 	var chatMembers []ChatMember
-	for i, u := range user {
+	for i, u := range userTable {
 		userID, _ := strconv.Atoi(u.ID)
 		chatMembers[i] = ChatMember{
-			JoinedTime: time.Now(),
-			ChatID:     chat.ID,
-			UserID:     int(userID),
+			JoinedTime:  time.Now(),
+			ChatTableID: chat.ID,
+			UserTableID: int(userID),
 		}
 
 		if err := d.db.Create(&chatMembers).Error; err != nil {
@@ -76,19 +42,19 @@ func (d *Database) GetChatMessages(ChatID int64) ([]Message, error) {
 }
 
 func (d *Database) GetUsersChatMembers(userID int) ([]ChatMember, error) {
-	var usersChats []ChatMember
-	if err := d.db.Where("user_id = ?", userID).Find(&usersChats).Error; err != nil {
+	var usersChatMembers []ChatMember
+	if err := d.db.Where("user_id = ?", userID).Find(&usersChatMembers).Error; err != nil {
 		return nil, fmt.Errorf("no  chat found for user %w", err)
 	}
-	return usersChats, nil
+	return usersChatMembers, nil
 }
 
 func (d *Database) GetUsersChatIDAndChatName(chatMember []ChatMember) ([]ChatIDAndChatName, error) {
 	var result []ChatIDAndChatName
 	for _, chat := range chatMember {
 		result = append(result, ChatIDAndChatName{
-			ChatID:   chat.ChatID,
-			ChatName: chat.Chat.Name,
+			ChatID:   chat.ChatTableID,
+			ChatName: chat.ChatTable.Name,
 		})
 	}
 	if len(result) == 0 {

@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var Mysql *Database
+var Mysql Database
 
 type Database struct {
 	db *gorm.DB
@@ -19,14 +19,14 @@ func NewDatabase() {
 	var err error
 	dsn := "root:831374@tcp(127.0.0.1:3306)/messenger?charset=utf8mb4&parseTime=True&loc=Local"
 	gormDB, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	Mysql.db = gormDB
 	if err != nil {
 		panic("failed to connect to database")
 	}
-	err = gormDB.AutoMigrate(&Chat{}, &ChatMember{}, &Message{}, &UserTable{})
+	err = Mysql.db.AutoMigrate(&ChatTable{}, &ChatMember{}, &Message{}, &UserTable{})
 	if err != nil {
 		log.Printf("failed to migrate: %v", err)
 		return
 	}
 	fmt.Println("Migration done ..")
-	Mysql.db = gormDB
 }

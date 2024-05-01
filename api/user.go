@@ -45,7 +45,7 @@ func ReadUserHandler(c *gin.Context) {
 			c.Status(400)
 			return
 		}
-		user, err := db.Mysql.ReadAnotherUser(username.Username)
+		user, err := db.Mysql.ReadUserByUsername(username.Username)
 		if err != nil {
 			log.Printf("error reading user:%v", err)
 			c.Status(400)
@@ -82,14 +82,7 @@ func ReadUserHandler(c *gin.Context) {
 			c.Status(400)
 			return
 		} else {
-			var userInfo UserInfo
-
-			userInfo.Username = user.Username
-			userInfo.FirstName = user.FirstName
-			userInfo.LastName = user.LastName
-			userInfo.Gender = user.Gender
-			userInfo.DateOfBirth = user.DateOfBirth
-			userInfo.CreatedTime = user.CreatedTime
+			userInfo := ConvertUserTableToUserInfo(user)
 			convertUserToJSON, err := json.Marshal(userInfo)
 			if err != nil {
 				log.Printf("error marshaling:%v", err)
@@ -126,17 +119,9 @@ func UpdateUserHandler(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	gender := newInfo.Gender
 
-	dbUserInfo := db.UserInfo{
-		Username:    newInfo.Username,
-		FirstName:   newInfo.FirstName,
-		LastName:    newInfo.LastName,
-		Gender:      gender,
-		DateOfBirth: newInfo.DateOfBirth,
-		CreatedTime: newInfo.CreatedTime,
-	}
-	err = db.Mysql.UpdateUser(userID, dbUserInfo)
+	userTable := ConvertUserInfoToUserTable(newInfo)
+	err = db.Mysql.UpdateUser(userID, userTable)
 	if err != nil {
 		log.Printf("error updating user:%v", err)
 		c.Status(400)
