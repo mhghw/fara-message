@@ -64,7 +64,6 @@ func RegisterHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, userTokenJSON)
 }
 
-// other validation fields will be added...
 func validateUser(form RegisterForm) error {
 	if len(form.Username) < 5 || form.Username == "" {
 		return errors.New("username length must be more than 5 characters")

@@ -31,18 +31,35 @@ func authenticateUser(c *gin.Context) {
 	}
 
 	if len(loginBody.Username) < 3 || len(loginBody.Password) < 8 {
-		c.JSON(http.StatusBadRequest, errIncorrectUserOrPassJSON)
+		c.JSON(http.StatusBadRequest, string(errIncorrectUserOrPassJSON))
 		return
 	}
 
 	//checking entered data with data that is already stored
 	userUnderReview, err := db.Mysql.ReadUserByUsername(loginBody.Username)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, errIncorrectUserOrPassJSON)
+		c.JSON(http.StatusBadRequest, string(errIncorrectUserOrPassJSON))
+		return
 	}
 	if hash(loginBody.Password) == userUnderReview.Password {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "username and password are correct",
 		})
 	}
+
+	token, err := CreateJWTToken(userUnderReview.ID)
+	if err != nil {
+		log.Print("failed to create token")
+		return
+	}
+	userToken := tokenJSON{
+		Token: token,
+	}
+	userTokenJSON, err := json.Marshal(userToken)
+	if err != nil {
+		log.Print("failed to marshal token")
+		return
+	}
+
+	c.JSON(http.StatusOK, userTokenJSON)
 }
