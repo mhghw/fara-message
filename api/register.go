@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -54,14 +53,14 @@ func RegisterHandler(c *gin.Context) {
 	userToken := tokenJSON{
 		Token: token,
 	}
-	userTokenJSON, err := json.Marshal(userToken)
+	// userTokenJSON, err := json.Marshal(userToken)
 	if err != nil {
 		log.Print("failed to marshal token")
 		return
 	}
 
 	db.Mysql.CreateUser(user)
-	c.JSON(http.StatusOK, userTokenJSON)
+	c.JSON(http.StatusOK, userToken.Token)
 }
 
 func validateUser(form RegisterForm) error {

@@ -49,17 +49,15 @@ func authenticateUser(c *gin.Context) {
 
 	token, err := CreateJWTToken(userUnderReview.ID)
 	if err != nil {
-		log.Print("failed to create token")
-		return
-	}
-	userToken := tokenJSON{
-		Token: token,
-	}
-	userTokenJSON, err := json.Marshal(userToken)
-	if err != nil {
-		log.Print("failed to marshal token")
+		log.Printf("failed to create token: %v", err)
 		return
 	}
 
-	c.JSON(http.StatusOK, userTokenJSON)
+	// userTokenJSON, err := json.Marshal(userToken)
+	// if err != nil {
+	// 	log.Print("failed to marshal token")
+	// 	return
+	// }
+
+	c.JSON(http.StatusOK, token)
 }

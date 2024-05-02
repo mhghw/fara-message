@@ -9,11 +9,11 @@ import (
 func RunWebServer(port int) error {
 	addr := fmt.Sprintf(":%d", port)
 	router := gin.New()
-	router.POST("/user/register", RegisterHandler)
+	router.POST("/register", RegisterHandler)
 	router.POST("/login", authenticateUser)
 	router.Use(AuthMiddlewareHandler)
-	router.POST("/change_password", changePassword)
 	router.POST("/user/info", ReadUserHandler)
+	router.POST("/change_password", changePassword)
 	router.POST("/user/update", UpdateUserHandler)
 	router.POST("/user/delete", DeleteUserHandler)
 	router.POST("/user/edit", editUser)

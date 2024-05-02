@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -24,11 +25,15 @@ func CreateJWTToken(userID string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error signing token: %w", err)
 	}
+
 	return tokenString, nil
 
 }
 
 func ValidateToken(tokenString string) (string, error) {
+	tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+	tokenString = strings.Trim(tokenString, `"`)
+
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return secretKey, nil
 	})
@@ -43,7 +48,8 @@ func ValidateToken(tokenString string) (string, error) {
 		return "", errors.New("invalid claims format")
 	}
 	userID := claims[TokenUserID].(string)
-	expirationTime := claims[TokenExpireTime].(time.Time)
+	expirationTimeUnix := claims[TokenExpireTime].(float64)
+	expirationTime := time.Unix(int64(expirationTimeUnix), 0)
 	if expirationTime.Before(time.Now()) {
 		return "", errors.New("token has expired")
 	}

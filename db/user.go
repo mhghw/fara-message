@@ -15,7 +15,7 @@ func (d *Database) ReadUserByUsername(username string) (UserTable, error) {
 	var user UserTable
 	result := d.db.First(&user, "username=?", username)
 	if result.Error != nil {
-		return user, fmt.Errorf("failed to read another user: %w", result.Error)
+		return user, fmt.Errorf("failed to read user: %w", result.Error)
 	}
 	return user, nil
 }
@@ -31,7 +31,7 @@ func (d *Database) ReadUser(ID string) (UserTable, error) {
 
 func (d *Database) UpdateUser(ID string, newInfo UserTable) error {
 
-	result := d.db.Model(&UserTable{}).Where("ID=?", ID).Updates(UserTable{FirstName: newInfo.FirstName, LastName: newInfo.LastName, Password: newInfo.Password, Gender: newInfo.Gender, DateOfBirth: newInfo.DateOfBirth})
+	result := d.db.Model(&UserTable{}).Where("ID=?", ID).Updates(UserTable{Username: newInfo.Username, FirstName: newInfo.FirstName, LastName: newInfo.LastName, Password: newInfo.Password, Gender: newInfo.Gender, DateOfBirth: newInfo.DateOfBirth})
 	if result.Error != nil {
 		return fmt.Errorf("failed to Update user: %w", result.Error)
 	}

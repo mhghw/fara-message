@@ -10,6 +10,7 @@ import (
 
 func AuthMiddlewareHandler(c *gin.Context) {
 	tokenString := c.GetHeader("Authorization")
+
 	if tokenString == "" {
 		c.JSON(http.StatusForbidden, gin.H{
 
@@ -22,7 +23,7 @@ func AuthMiddlewareHandler(c *gin.Context) {
 	}
 	userID, err := ValidateToken(tokenString)
 	if err != nil {
-		log.Print("failed to validate token")
+		log.Printf("failed to validate token: %v", err)
 		c.AbortWithStatus(http.StatusForbidden)
 		return
 	}
