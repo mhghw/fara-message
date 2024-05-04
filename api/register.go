@@ -64,7 +64,7 @@ func RegisterHandler(c *gin.Context) {
 }
 
 func validateUser(form RegisterForm) error {
-	if len(form.Username) < 5 || form.Username == "" {
+	if len(form.Username) < 4 || form.Username == "" {
 		return errors.New("username length must be more than 5 characters")
 	}
 	if len(form.FirstName) < 3 || form.FirstName == "" {
