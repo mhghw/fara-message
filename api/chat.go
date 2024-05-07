@@ -18,21 +18,38 @@ type GroupChatRequest struct {
 	Users    []db.UserTable `json:"users"`
 }
 type DirectChatRequest struct {
-	Users []db.UserTable `json:"users"`
+	Users []UsernameType `json:"users"`
 }
 
 func NewDirectChatHandler(c *gin.Context) {
 	var requestBody DirectChatRequest
+
 	err := c.BindJSON(&requestBody)
 	if err != nil {
 		log.Print("failed to bind json, ", err)
 		return
 	}
 
-	if err := db.Mysql.NewChat("", db.Direct, requestBody.Users); err != nil {
+	userTable := []db.UserTable{}
+	for _, v := range requestBody.Users {
+		user, err := db.Mysql.ReadUserByUsername(v.Username)
+		if err != nil {
+			log.Printf("failed to read user: %v", err)
+			return
+		}
+
+		userTable = append(userTable, user)
+	}
+	if len(userTable) == 0 {
+		log.Print("failed to create chat: no users provided")
+		return
+	}
+
+	if err := db.Mysql.NewChat("", db.Direct, userTable); err != nil {
 		log.Print("failed to create chat, ", err)
 		return
 	}
+	log.Print("direct chat created")
 }
 
 func NewGroupChatHandler(c *gin.Context) {

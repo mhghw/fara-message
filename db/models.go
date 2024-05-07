@@ -24,7 +24,7 @@ var (
 )
 
 type User struct {
-	ID          string `gorm:"primary_key"`
+	ID          string
 	Username    string
 	FirstName   string
 	LastName    string
@@ -35,7 +35,7 @@ type User struct {
 	DeletedTime time.Time
 }
 type UserTable struct {
-	ID          string `gorm:"primary_key"`
+	ID          string
 	Username    string
 	FirstName   string
 	LastName    string
@@ -147,7 +147,7 @@ func ConvertChatToChatTable(chat Chat) ChatTable {
 		ID:          chat.ID,
 		Name:        chat.Name,
 		CreatedTime: chat.CreatedTime,
-		DeletedTime: chat.DeletedTime,
+		DeletedTime: time.Date(1, time.January, 1, 1, 1, 1, 0, time.UTC),
 		Type:        chatType,
 	}
 	return result
