@@ -15,8 +15,8 @@ type loginBody struct {
 }
 
 func authenticateUser(c *gin.Context) {
-	var loginData loginBody
-	err := c.BindJSON(&loginData)
+	var loginBody loginBody
+	err := c.BindJSON(&loginBody)
 	if err != nil {
 		log.Printf("error binding JSON:%v", err)
 		c.Status(400)
@@ -30,19 +30,34 @@ func authenticateUser(c *gin.Context) {
 		return
 	}
 
-	if len(loginData.Username) < 3 || len(loginData.Password) < 8 {
-		c.JSON(http.StatusBadRequest, errIncorrectUserOrPassJSON)
+	if len(loginBody.Username) < 3 || len(loginBody.Password) < 8 {
+		c.JSON(http.StatusBadRequest, string(errIncorrectUserOrPassJSON))
 		return
 	}
 
 	//checking entered data with data that is already stored
-	userUnderReveiw, err := db.Mysql.ReadAnotherUser(loginData.Username)
+	userUnderReview, err := db.Mysql.ReadUserByUsername(loginBody.Username)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, errIncorrectUserOrPassJSON)
+		c.JSON(http.StatusBadRequest, string(errIncorrectUserOrPassJSON))
+		return
 	}
-	if hash(loginData.Password) == userUnderReveiw.Password {
+	if hash(loginBody.Password) == userUnderReview.Password {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "username and password are correct",
 		})
 	}
+
+	token, err := CreateJWTToken(userUnderReview.ID)
+	if err != nil {
+		log.Printf("failed to create token: %v", err)
+		return
+	}
+
+	// userTokenJSON, err := json.Marshal(userToken)
+	// if err != nil {
+	// 	log.Print("failed to marshal token")
+	// 	return
+	// }
+
+	c.JSON(http.StatusOK, token)
 }

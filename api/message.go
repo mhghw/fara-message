@@ -91,7 +91,7 @@ func SendMessageHandler(c *gin.Context) {
 	ID, _ := strconv.Atoi(userID)
 	message.SenderID = ID
 
-	err = db.Mysql.SendMessage(message.ID, message.SenderID, message.ChatID, message.Content)
+	err = db.Mysql.SendMessage(message.SenderID, message.ChatID, message.Content)
 	if err != nil {
 		log.Printf("error:%v", err)
 		c.Status(400)

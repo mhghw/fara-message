@@ -14,25 +14,59 @@ type ChatRequest struct {
 	Name string `json:"chatName"`
 }
 type GroupChatRequest struct {
-	ChatName string    `json:"chatName"`
-	Users    []db.User `json:"users"`
+	ChatName string         `json:"chatName"`
+	Users    []db.UserTable `json:"users"`
 }
 type DirectChatRequest struct {
-	Users []db.User `json:"users"`
+	Users []UsernameType `json:"users"`
 }
 
 func NewDirectChatHandler(c *gin.Context) {
 	var requestBody DirectChatRequest
+
 	err := c.BindJSON(&requestBody)
 	if err != nil {
 		log.Print("failed to bind json, ", err)
 		return
 	}
+	tokenString := c.GetHeader("Authorization")
 
-	if err := db.Mysql.NewChat("", db.Direct, requestBody.Users); err != nil {
+	userID, err := ValidateToken(tokenString)
+	if err != nil {
+		log.Printf("failed to find user by token: %v", err)
+	}
+	userTable := []db.UserTable{}
+	for _, v := range requestBody.Users {
+		user, err := db.Mysql.ReadUserByUsername(v.Username)
+		if err != nil {
+			log.Printf("failed to read user: %v", err)
+			return
+		}
+		userTable = append(userTable, user)
+	}
+
+	validUser := false
+	for _, user := range userTable {
+		if user.ID == userID {
+			validUser = true
+		}
+	}
+	if !validUser {
+		log.Printf("you're not allowed")
+		c.JSON(400, "Invalid token")
+		return
+	}
+	if len(userTable) == 0 {
+		log.Print("failed to create chat: no users provided")
+		return
+	}
+	log.Println(userTable)
+
+	if err := db.Mysql.NewChat("", db.Direct, userTable); err != nil {
 		log.Print("failed to create chat, ", err)
 		return
 	}
+	log.Print("direct chat created")
 }
 
 func NewGroupChatHandler(c *gin.Context) {
@@ -42,8 +76,39 @@ func NewGroupChatHandler(c *gin.Context) {
 		log.Print("failed to bind json, ", err)
 		return
 	}
+	tokenString := c.GetHeader("Authorization")
 
-	if err := db.Mysql.NewChat(requestBody.ChatName, db.Group, requestBody.Users); err != nil {
+	userID, err := ValidateToken(tokenString)
+	if err != nil {
+		log.Printf("failed to find user by token: %v", err)
+	}
+	userTable := []db.UserTable{}
+	for _, v := range requestBody.Users {
+		user, err := db.Mysql.ReadUserByUsername(v.Username)
+		if err != nil {
+			log.Printf("failed to read user: %v", err)
+			return
+		}
+		userTable = append(userTable, user)
+	}
+
+	validUser := false
+	for _, user := range userTable {
+		if user.ID == userID {
+			validUser = true
+		}
+	}
+	if !validUser {
+		log.Printf("you're not allowed")
+		c.JSON(400, "Invalid token")
+		return
+	}
+	if len(userTable) == 0 {
+		log.Print("failed to create chat: no users provided")
+		return
+	}
+	log.Println(requestBody.ChatName)
+	if err := db.Mysql.NewChat(requestBody.ChatName, db.Group, userTable); err != nil {
 		log.Printf("failed to create chat: %v", err)
 		return
 	}
@@ -76,8 +141,14 @@ func GetUsersChatsHandler(c *gin.Context) {
 	userID, _ := strconv.Atoi(userIDString)
 	chatMembers, err := db.Mysql.GetUsersChatMembers(userID)
 	if err != nil {
-		log.Print("failed to get users chat members")
+		log.Printf("failed to get users chats: %v", err)
 		return
 	}
-	c.JSON(200, chatMembers)
+
+	result, err := db.Mysql.GetUsersChatIDAndChatName(chatMembers)
+	if err != nil {
+		log.Printf("failed to get users chats: %v", err)
+		return
+	}
+	c.JSON(200, result)
 }

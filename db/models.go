@@ -1,25 +1,32 @@
 package db
 
 import (
+	"log"
+	"strconv"
 	"time"
 )
 
 type Message struct {
-	ID       int `gorm:"primary_key"`
-	SenderID int `gorm:"foreign_key"`
-	ChatID   int `gorm:"foreign_key"`
-	Content  string
+	ID          int
+	UserTableID int
+	UserTable   UserTable
+	ChatTableID int
+	ChatTable   ChatTable
+	Content     string
 }
 
-type Gender int8
+type Gender struct {
+	gender int
+}
 
-const (
-	Male Gender = iota
-	Female
+var (
+	Male      = Gender{gender: 0}
+	Female    = Gender{gender: 1}
+	NonBinary = Gender{gender: 2}
 )
 
 type User struct {
-	ID          string `gorm:"primary_key"`
+	ID          string
 	Username    string
 	FirstName   string
 	LastName    string
@@ -27,6 +34,18 @@ type User struct {
 	Gender      Gender
 	DateOfBirth time.Time
 	CreatedTime time.Time
+	DeletedTime time.Time
+}
+type UserTable struct {
+	ID          int
+	Username    string
+	FirstName   string
+	LastName    string
+	Password    string
+	Gender      int8
+	DateOfBirth time.Time
+	CreatedTime time.Time
+	DeletedTime time.Time
 }
 
 type UserInfo struct {
@@ -39,6 +58,46 @@ type UserInfo struct {
 	CreatedTime time.Time `json:"createdTime"`
 }
 
+type Chat struct {
+	ID          int
+	Name        string
+	CreatedTime time.Time
+	DeletedTime time.Time
+	Type        ChatType
+}
+type ChatTable struct {
+	ID          int
+	Name        string
+	CreatedTime time.Time
+	DeletedTime time.Time
+	Type        int8
+}
+type ChatMember struct {
+	UserTableID int
+	UserTable   UserTable
+	ChatTableID int
+	ChatTable   ChatTable
+	JoinedTime  time.Time
+	LeftTime    time.Time
+}
+type ChatType struct {
+	chatType int
+}
+type ChatIDAndChatName struct {
+	ChatID   int
+	ChatName string
+}
+
+func (c *ChatType) Int() int {
+	return c.chatType
+}
+
+var (
+	Direct  = ChatType{chatType: 0}
+	Group   = ChatType{chatType: 1}
+	Unknown = ChatType{chatType: -1}
+)
+
 func ConvertUserToUserInfo(user User) UserInfo {
 	return UserInfo{
 		ID:          user.ID,
@@ -49,4 +108,53 @@ func ConvertUserToUserInfo(user User) UserInfo {
 		DateOfBirth: user.DateOfBirth,
 		CreatedTime: user.CreatedTime,
 	}
+}
+
+func ConvertUserToUserTable(user User) UserTable {
+	var gender int8
+	switch user.Gender.gender {
+	case 0:
+		gender = 0
+	case 1:
+		gender = 1
+	case 2:
+		gender = 2
+	}
+	userID, err := strconv.Atoi(user.ID)
+	if err != nil {
+		log.Printf("failed to convert user: %v", err)
+	}
+	userTable := UserTable{
+		ID:          userID,
+		Username:    user.Username,
+		FirstName:   user.FirstName,
+		LastName:    user.LastName,
+		Password:    user.Password,
+		Gender:      gender,
+		DateOfBirth: user.DateOfBirth,
+		CreatedTime: user.CreatedTime,
+		DeletedTime: user.DeletedTime,
+	}
+	return userTable
+}
+
+func ConvertChatToChatTable(chat Chat) ChatTable {
+	var chatType int8
+	switch chat.Type {
+	case Direct:
+		chatType = 0
+	case Group:
+		chatType = 1
+	default:
+		chatType = -1
+	}
+
+	result := ChatTable{
+		ID:          chat.ID,
+		Name:        chat.Name,
+		CreatedTime: chat.CreatedTime,
+		DeletedTime: time.Date(1, time.January, 1, 1, 1, 1, 0, time.UTC),
+		Type:        chatType,
+	}
+	return result
 }

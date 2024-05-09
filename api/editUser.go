@@ -31,7 +31,7 @@ func editUser(c *gin.Context) {
 		return
 	}
 
-	userUnderReview, err := db.Mysql.ReadAnotherUser(userInfo.Username)
+	userUnderReview, err := db.Mysql.ReadUserByUsername(userInfo.Username)
 	if err != nil {
 		log.Printf("error getting username from database:%v", err)
 		c.Status(400)
@@ -40,7 +40,7 @@ func editUser(c *gin.Context) {
 
 	userUnderReview.FirstName = userInfo.Firstname
 	userUnderReview.LastName = userInfo.Lastname
-	err = db.Mysql.UpdateUser(userUnderReview.ID, db.ConvertUserToUserInfo(userUnderReview))
+	err = db.Mysql.UpdateUser(userUnderReview.ID, userUnderReview)
 	if err != nil {
 		log.Printf("error updating user:%v", err)
 		c.Status(400)

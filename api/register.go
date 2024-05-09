@@ -1,16 +1,17 @@
 package api
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mhghw/fara-message/db"
+	"gorm.io/gorm"
 )
 
 type RegisterForm struct {
@@ -36,7 +37,7 @@ func RegisterHandler(c *gin.Context) {
 	}
 	err = validateUser(requestBody)
 	if err != nil {
-		log.Print("failed to validate user", err)
+		log.Print("failed to validate user: ", err)
 		return
 	}
 
@@ -45,8 +46,22 @@ func RegisterHandler(c *gin.Context) {
 		log.Print("failed to convert register form to user")
 		return
 	}
-
-	token, err := CreateJWTToken(user.ID)
+	userID, err := strconv.Atoi(user.ID)
+	if err != nil {
+		log.Printf("failed to convert user ID: %v", err)
+		return
+	}
+	repeatedUserName, err := CheckRepeatedUser(user.Username)
+	if err != nil {
+		log.Printf("failed to check for repeated user: %v", err)
+		return
+	}
+	if repeatedUserName {
+		log.Printf("repeated userName")
+		c.JSON(400, "repeated username")
+		return
+	}
+	token, err := CreateJWTToken(userID)
 	if err != nil {
 		log.Print("failed to create token")
 		return
@@ -54,18 +69,32 @@ func RegisterHandler(c *gin.Context) {
 	userToken := tokenJSON{
 		Token: token,
 	}
-	userTokenJSON, err := json.Marshal(userToken)
-	if err != nil {
-		log.Print("failed to marshal token")
-		return
-	}
 
 	db.Mysql.CreateUser(user)
-	c.JSON(http.StatusOK, userTokenJSON)
+	c.JSON(http.StatusOK, userToken.Token)
 }
 
-// other validation fields will be added...
 func validateUser(form RegisterForm) error {
+	if len(form.Username) < 4 || form.Username == "" {
+		return errors.New("username length must be more than 5 characters")
+	}
+	if len(form.FirstName) < 3 || form.FirstName == "" {
+		return errors.New("first name length must be more than 3 characters")
+	}
+	if len(form.LastName) < 3 || form.LastName == "" {
+		return errors.New("last name length must be more than 3 characters")
+	}
+	if form.Gender == "" {
+		return errors.New("please fill the gender section")
+	}
+
+	if strings.ToLower(form.Gender) != "male" && strings.ToLower(form.Gender) != "female" && strings.ToLower(form.Gender) != "non binary" {
+		return errors.New("wrong gender type ")
+	}
+	if form.DateOfBirth == "" {
+		return errors.New("please fill the date of birth section")
+	}
+
 	if len(form.Password) < 8 {
 		return errors.New("password is too short")
 	}
@@ -82,6 +111,8 @@ func assignGender(sex string) db.Gender {
 		gender = db.Male
 	case "female":
 		gender = db.Female
+	case "non binary":
+		gender = db.NonBinary
 	}
 	return gender
 
@@ -103,7 +134,27 @@ func convertRegisterFormToUser(form RegisterForm) (db.User, error) {
 		Password:    form.Password,
 		Gender:      gender,
 		DateOfBirth: convertTime,
+		CreatedTime: time.Now(),
+		DeletedTime: time.Date(1, time.January, 1, 1, 1, 1, 0, time.UTC),
 	}
 
 	return user, nil
+}
+
+func CheckRepeatedUser(username string) (bool, error) {
+	result := true
+	var err error
+	err = nil
+	_, err = db.Mysql.ReadUserByUsername(username)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			result = false
+			err = nil
+			return result, err
+		}
+
+		log.Printf("failed to get user: %v", err)
+		return result, err
+	}
+	return result, err
 }
