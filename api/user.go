@@ -84,17 +84,6 @@ func UpdateUserHandler(c *gin.Context) {
 func DeleteUserHandler(c *gin.Context) {
 	authorizationHeader := c.GetHeader("Authorization")
 	userID, err := ValidateToken(authorizationHeader)
-	// if authorizationHeader == "" {
-	// 	c.JSON(http.StatusBadRequest, gin.H{"error": "Unauthorized"})
-	// 	return
-	// }
-	// parts := strings.Split(authorizationHeader, " ")
-	// if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-	// 	c.JSON(http.StatusBadRequest, gin.H{"error": "Unauthorized"})
-	// 	return
-	// }
-	// accessToken := parts[1]
-	// userID, err := getUserIDFromToken(accessToken)
 	if err != nil {
 		log.Printf("error validating token: %v", err)
 		c.Status(400)

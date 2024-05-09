@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
 	"time"
 
 	"gorm.io/gorm"
@@ -35,13 +34,13 @@ func (d *Database) NewChat(chatName string, chatType ChatType, userTable []UserT
 		d.db.Create(&chatTable)
 		var chatMembers []ChatMember
 		for _, u := range userTable {
-			userID, _ := strconv.Atoi(u.ID)
+
 			chatMember := ChatMember{
 				UserTable:   u,
 				ChatTable:   chatTable,
 				JoinedTime:  time.Now(),
 				ChatTableID: chatTable.ID,
-				UserTableID: userID,
+				UserTableID: u.ID,
 				LeftTime:    time.Date(1, time.January, 1, 1, 1, 1, 0, time.UTC),
 			}
 			chatMembers = append(chatMembers, chatMember)
@@ -50,7 +49,7 @@ func (d *Database) NewChat(chatName string, chatType ChatType, userTable []UserT
 		}
 		if err := d.db.Create(&chatMembers).Error; err != nil {
 
-			return errors.New("cannot create chat member")
+			return fmt.Errorf("cannot create chat member: %w", err)
 
 		}
 
@@ -89,7 +88,7 @@ func (d *Database) GetUsersChatIDAndChatName(chatMember []ChatMember) ([]ChatIDA
 }
 
 func (d *Database) CheckRepeatedDirectChat(userTable []UserTable) (int, error) {
-	var userIDs []string
+	var userIDs []int
 	for _, user := range userTable {
 		userIDs = append(userIDs, user.ID)
 	}

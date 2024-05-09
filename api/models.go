@@ -1,6 +1,8 @@
 package api
 
 import (
+	"log"
+	"strconv"
 	"time"
 
 	"github.com/mhghw/fara-message/db"
@@ -57,7 +59,7 @@ func ConvertUserTableToUserInfo(userTable db.UserTable) UserInfo {
 
 	}
 	userInfo := UserInfo{
-		ID:          userTable.ID,
+		ID:          string(userTable.ID),
 		Username:    userTable.Username,
 		FirstName:   userTable.FirstName,
 		LastName:    userTable.LastName,
@@ -77,8 +79,12 @@ func ConvertUserInfoToUserTable(user UserInfo) db.UserTable {
 	case db.NonBinary:
 		gender = 2
 	}
+	userID, err := strconv.Atoi(user.ID)
+	if err != nil {
+		log.Printf("Error converting user: %v", err)
+	}
 	userTable := db.UserTable{
-		ID:          user.ID,
+		ID:          userID,
 		Username:    user.Username,
 		FirstName:   user.FirstName,
 		LastName:    user.LastName,

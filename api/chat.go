@@ -29,7 +29,12 @@ func NewDirectChatHandler(c *gin.Context) {
 		log.Print("failed to bind json, ", err)
 		return
 	}
+	tokenString := c.GetHeader("Authorization")
 
+	userID, err := ValidateToken(tokenString)
+	if err != nil {
+		log.Printf("failed to find user by token: %v", err)
+	}
 	userTable := []db.UserTable{}
 	for _, v := range requestBody.Users {
 		user, err := db.Mysql.ReadUserByUsername(v.Username)
@@ -37,13 +42,25 @@ func NewDirectChatHandler(c *gin.Context) {
 			log.Printf("failed to read user: %v", err)
 			return
 		}
-
 		userTable = append(userTable, user)
+	}
+
+	validUser := false
+	for _, user := range userTable {
+		if user.ID == userID {
+			validUser = true
+		}
+	}
+	if !validUser {
+		log.Printf("you're not allowed")
+		c.JSON(400, "Invalid token")
+		return
 	}
 	if len(userTable) == 0 {
 		log.Print("failed to create chat: no users provided")
 		return
 	}
+	log.Println(userTable)
 
 	if err := db.Mysql.NewChat("", db.Direct, userTable); err != nil {
 		log.Print("failed to create chat, ", err)

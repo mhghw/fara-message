@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mhghw/fara-message/db"
+	"gorm.io/gorm"
 )
 
 type RegisterForm struct {
@@ -44,19 +46,28 @@ func RegisterHandler(c *gin.Context) {
 		log.Print("failed to convert register form to user")
 		return
 	}
-
-	token, err := CreateJWTToken(user.ID)
+	userID, err := strconv.Atoi(user.ID)
+	if err != nil {
+		log.Printf("failed to convert user ID: %v", err)
+		return
+	}
+	repeatedUserName, err := CheckRepeatedUser(user.Username)
+	if err != nil {
+		log.Printf("failed to check for repeated user: %v", err)
+		return
+	}
+	if repeatedUserName {
+		log.Printf("repeated userName")
+		c.JSON(400, "repeated username")
+		return
+	}
+	token, err := CreateJWTToken(userID)
 	if err != nil {
 		log.Print("failed to create token")
 		return
 	}
 	userToken := tokenJSON{
 		Token: token,
-	}
-	// userTokenJSON, err := json.Marshal(userToken)
-	if err != nil {
-		log.Print("failed to marshal token")
-		return
 	}
 
 	db.Mysql.CreateUser(user)
@@ -76,7 +87,7 @@ func validateUser(form RegisterForm) error {
 	if form.Gender == "" {
 		return errors.New("please fill the gender section")
 	}
-	log.Println(strings.ToLower(form.Gender))
+
 	if strings.ToLower(form.Gender) != "male" && strings.ToLower(form.Gender) != "female" && strings.ToLower(form.Gender) != "non binary" {
 		return errors.New("wrong gender type ")
 	}
@@ -128,4 +139,22 @@ func convertRegisterFormToUser(form RegisterForm) (db.User, error) {
 	}
 
 	return user, nil
+}
+
+func CheckRepeatedUser(username string) (bool, error) {
+	result := true
+	var err error
+	err = nil
+	_, err = db.Mysql.ReadUserByUsername(username)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			result = false
+			err = nil
+			return result, err
+		}
+
+		log.Printf("failed to get user: %v", err)
+		return result, err
+	}
+	return result, err
 }

@@ -1,6 +1,8 @@
 package db
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func (d *Database) CreateUser(user User) error {
 	userTable := ConvertUserToUserTable(user)
@@ -20,7 +22,7 @@ func (d *Database) ReadUserByUsername(username string) (UserTable, error) {
 	return user, nil
 }
 
-func (d *Database) ReadUser(ID string) (UserTable, error) {
+func (d *Database) ReadUser(ID int) (UserTable, error) {
 	var user UserTable
 	result := d.db.First(&user, "ID=?", ID)
 	if result.Error != nil {
@@ -29,7 +31,7 @@ func (d *Database) ReadUser(ID string) (UserTable, error) {
 	return user, nil
 }
 
-func (d *Database) UpdateUser(ID string, newInfo UserTable) error {
+func (d *Database) UpdateUser(ID int, newInfo UserTable) error {
 
 	result := d.db.Model(&UserTable{}).Where("ID=?", ID).Updates(UserTable{Username: newInfo.Username, FirstName: newInfo.FirstName, LastName: newInfo.LastName, Password: newInfo.Password, Gender: newInfo.Gender, DateOfBirth: newInfo.DateOfBirth})
 	if result.Error != nil {
@@ -38,7 +40,7 @@ func (d *Database) UpdateUser(ID string, newInfo UserTable) error {
 	return nil
 }
 
-func (d *Database) DeleteUser(ID string) error {
+func (d *Database) DeleteUser(ID int) error {
 	var user UserTable
 	result := d.db.First(&user, "ID=?", ID)
 	if result.Error != nil {
