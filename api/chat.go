@@ -76,8 +76,39 @@ func NewGroupChatHandler(c *gin.Context) {
 		log.Print("failed to bind json, ", err)
 		return
 	}
+	tokenString := c.GetHeader("Authorization")
 
-	if err := db.Mysql.NewChat(requestBody.ChatName, db.Group, requestBody.Users); err != nil {
+	userID, err := ValidateToken(tokenString)
+	if err != nil {
+		log.Printf("failed to find user by token: %v", err)
+	}
+	userTable := []db.UserTable{}
+	for _, v := range requestBody.Users {
+		user, err := db.Mysql.ReadUserByUsername(v.Username)
+		if err != nil {
+			log.Printf("failed to read user: %v", err)
+			return
+		}
+		userTable = append(userTable, user)
+	}
+
+	validUser := false
+	for _, user := range userTable {
+		if user.ID == userID {
+			validUser = true
+		}
+	}
+	if !validUser {
+		log.Printf("you're not allowed")
+		c.JSON(400, "Invalid token")
+		return
+	}
+	if len(userTable) == 0 {
+		log.Print("failed to create chat: no users provided")
+		return
+	}
+	log.Println(requestBody.ChatName)
+	if err := db.Mysql.NewChat(requestBody.ChatName, db.Group, userTable); err != nil {
 		log.Printf("failed to create chat: %v", err)
 		return
 	}

@@ -10,7 +10,7 @@ import (
 )
 
 func (d *Database) NewChat(chatName string, chatType ChatType, userTable []UserTable) error {
-	var name string
+	name := chatName
 	if chatName == "" {
 		for _, user := range userTable {
 			name += " " + user.Username
@@ -23,37 +23,42 @@ func (d *Database) NewChat(chatName string, chatType ChatType, userTable []UserT
 		CreatedTime: time.Now(),
 	}
 	chatTable := ConvertChatToChatTable(chat)
-	chatID, err := Mysql.CheckRepeatedDirectChat(userTable)
-	if err != nil {
-		log.Printf("Error checking for repeated chat: %v", err)
-		return err
-	}
-	log.Println(chatID)
-	if chatID == 0 {
+	if chatType == Direct {
 
-		d.db.Create(&chatTable)
-		var chatMembers []ChatMember
-		for _, u := range userTable {
-
-			chatMember := ChatMember{
-				UserTable:   u,
-				ChatTable:   chatTable,
-				JoinedTime:  time.Now(),
-				ChatTableID: chatTable.ID,
-				UserTableID: u.ID,
-				LeftTime:    time.Date(1, time.January, 1, 1, 1, 1, 0, time.UTC),
-			}
-			chatMembers = append(chatMembers, chatMember)
-			// log.Println("List of chatMembers", chatMembers)
-
+		chatID, err := Mysql.CheckRepeatedDirectChat(userTable)
+		if err != nil {
+			log.Printf("Error checking for repeated chat: %v", err)
+			return err
 		}
-		if err := d.db.Create(&chatMembers).Error; err != nil {
-
-			return fmt.Errorf("cannot create chat member: %w", err)
-
+		log.Println(chatID)
+		if chatID != 0 {
+			log.Printf("direct chat already exists: %v", chatID)
+			return nil
 		}
+	}
+
+	d.db.Create(&chatTable)
+	var chatMembers []ChatMember
+	for _, u := range userTable {
+
+		chatMember := ChatMember{
+			UserTable:   u,
+			ChatTable:   chatTable,
+			JoinedTime:  time.Now(),
+			ChatTableID: chatTable.ID,
+			UserTableID: u.ID,
+			LeftTime:    time.Date(1, time.January, 1, 1, 1, 1, 0, time.UTC),
+		}
+		chatMembers = append(chatMembers, chatMember)
+		// log.Println("List of chatMembers", chatMembers)
 
 	}
+	if err := d.db.Create(&chatMembers).Error; err != nil {
+
+		return fmt.Errorf("cannot create chat member: %w", err)
+
+	}
+
 	return nil
 }
 
