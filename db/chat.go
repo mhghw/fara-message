@@ -3,33 +3,62 @@ package db
 import (
 	"errors"
 	"fmt"
-	"strconv"
+	"log"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 func (d *Database) NewChat(chatName string, chatType ChatType, userTable []UserTable) error {
+	name := chatName
+	if chatName == "" {
+		for _, user := range userTable {
+			name += " " + user.Username
+		}
+
+	}
 	chat := Chat{
-		Name:        chatName,
+		Name:        name,
 		Type:        chatType,
 		CreatedTime: time.Now(),
 	}
-	var chatMembers []ChatMember
-	for i, u := range userTable {
-		userID, _ := strconv.Atoi(u.ID)
-		chatMembers[i] = ChatMember{
-			JoinedTime:  time.Now(),
-			ChatTableID: chat.ID,
-			UserTableID: int(userID),
+	chatTable := ConvertChatToChatTable(chat)
+	if chatType == Direct {
+
+		chatID, err := Mysql.CheckRepeatedDirectChat(userTable)
+		if err != nil {
+			log.Printf("Error checking for repeated chat: %v", err)
+			return err
 		}
-
-		if err := d.db.Create(&chatMembers).Error; err != nil {
-			d.db.Delete(&chatMembers)
-			return errors.New("cannot create chat member")
-
+		log.Println(chatID)
+		if chatID != 0 {
+			log.Printf("direct chat already exists: %v", chatID)
+			return nil
 		}
 	}
 
-	d.db.Create(&chat)
+	d.db.Create(&chatTable)
+	var chatMembers []ChatMember
+	for _, u := range userTable {
+
+		chatMember := ChatMember{
+			UserTable:   u,
+			ChatTable:   chatTable,
+			JoinedTime:  time.Now(),
+			ChatTableID: chatTable.ID,
+			UserTableID: u.ID,
+			LeftTime:    time.Date(1, time.January, 1, 1, 1, 1, 0, time.UTC),
+		}
+		chatMembers = append(chatMembers, chatMember)
+		// log.Println("List of chatMembers", chatMembers)
+
+	}
+	if err := d.db.Create(&chatMembers).Error; err != nil {
+
+		return fmt.Errorf("cannot create chat member: %w", err)
+
+	}
+
 	return nil
 }
 
@@ -61,4 +90,22 @@ func (d *Database) GetUsersChatIDAndChatName(chatMember []ChatMember) ([]ChatIDA
 		return result, errors.New("no chat found for user ")
 	}
 	return result, nil
+}
+
+func (d *Database) CheckRepeatedDirectChat(userTable []UserTable) (int, error) {
+	var userIDs []int
+	for _, user := range userTable {
+		userIDs = append(userIDs, user.ID)
+	}
+	var chatTable ChatTable
+	err := d.db.Model(&ChatTable{}).Joins("JOIN chat_members ON chat_tables.id=chat_members.chat_table_id").Where("chat_tables.type=?", 0).Where("chat_members.user_table_id IN ?", userIDs).Find(&chatTable).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Printf("no direct chat found: %v ", err)
+			return 0, nil
+		}
+		log.Printf("failed to query for repeated direct chat : %v ", err)
+		return 0, err
+	}
+	return chatTable.ID, nil
 }

@@ -1,6 +1,8 @@
 package db
 
 import (
+	"log"
+	"strconv"
 	"time"
 )
 
@@ -24,7 +26,7 @@ var (
 )
 
 type User struct {
-	ID          string `gorm:"primary_key"`
+	ID          string
 	Username    string
 	FirstName   string
 	LastName    string
@@ -35,7 +37,7 @@ type User struct {
 	DeletedTime time.Time
 }
 type UserTable struct {
-	ID          string `gorm:"primary_key"`
+	ID          int
 	Username    string
 	FirstName   string
 	LastName    string
@@ -118,8 +120,12 @@ func ConvertUserToUserTable(user User) UserTable {
 	case 2:
 		gender = 2
 	}
+	userID, err := strconv.Atoi(user.ID)
+	if err != nil {
+		log.Printf("failed to convert user: %v", err)
+	}
 	userTable := UserTable{
-		ID:          user.ID,
+		ID:          userID,
 		Username:    user.Username,
 		FirstName:   user.FirstName,
 		LastName:    user.LastName,
@@ -147,7 +153,7 @@ func ConvertChatToChatTable(chat Chat) ChatTable {
 		ID:          chat.ID,
 		Name:        chat.Name,
 		CreatedTime: chat.CreatedTime,
-		DeletedTime: chat.DeletedTime,
+		DeletedTime: time.Date(1, time.January, 1, 1, 1, 1, 0, time.UTC),
 		Type:        chatType,
 	}
 	return result
