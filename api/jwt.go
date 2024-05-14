@@ -51,7 +51,6 @@ func ValidateToken(tokenString string) (int, error) {
 		return 0, errors.New("invalid claims format")
 	}
 	userIDString := claims[TokenUserID].(string)
-	log.Printf("userIDString: %s", userIDString)
 	userID, err := strconv.Atoi(userIDString)
 	if err != nil {
 		log.Printf("failed to convert user ID: %v", err)
