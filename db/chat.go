@@ -47,7 +47,6 @@ func (d *Database) NewChat(chatName string, chatType ChatType, userTable []UserT
 			JoinedTime:  time.Now(),
 			ChatTableID: chatTable.ID,
 			UserTableID: u.ID,
-			LeftTime:    time.Date(1, time.January, 1, 1, 1, 1, 0, time.UTC),
 		}
 		chatMembers = append(chatMembers, chatMember)
 		// log.Println("List of chatMembers", chatMembers)

@@ -135,7 +135,7 @@ func convertRegisterFormToUser(form RegisterForm) (db.User, error) {
 		Gender:      gender,
 		DateOfBirth: convertTime,
 		CreatedTime: time.Now(),
-		DeletedTime: time.Date(1, time.January, 1, 1, 1, 1, 0, time.UTC),
+		DeletedTime: time.Time{},
 	}
 
 	return user, nil

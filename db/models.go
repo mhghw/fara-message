@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"log"
 	"strconv"
 	"time"
@@ -45,7 +46,7 @@ type UserTable struct {
 	Gender      int8
 	DateOfBirth time.Time
 	CreatedTime time.Time
-	DeletedTime time.Time
+	DeletedTime sql.NullTime
 }
 
 type UserInfo struct {
@@ -78,7 +79,7 @@ type ChatMember struct {
 	ChatTableID int
 	ChatTable   ChatTable
 	JoinedTime  time.Time
-	LeftTime    time.Time
+	LeftTime    sql.NullTime
 }
 type ChatType struct {
 	chatType int
@@ -133,7 +134,6 @@ func ConvertUserToUserTable(user User) UserTable {
 		Gender:      gender,
 		DateOfBirth: user.DateOfBirth,
 		CreatedTime: user.CreatedTime,
-		DeletedTime: user.DeletedTime,
 	}
 	return userTable
 }
