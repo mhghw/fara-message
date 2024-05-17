@@ -3,7 +3,8 @@ package api
 import (
 	"crypto/sha1"
 	"encoding/hex"
-	"math/rand"
+
+	"github.com/rs/xid"
 )
 
 func hash(input string) string {
@@ -13,13 +14,8 @@ func hash(input string) string {
 	hashedString := hex.EncodeToString(hashedBytes)
 	return hashedString
 }
-func generateID() string {
-	const charset = "0123456789"
-	rand.NewSource(10)
-	id := make([]byte, 5)
-	for idx := range id {
-		id[idx] = charset[rand.Intn(len(charset))]
-	}
+func generateID() xid.ID {
+	guid := xid.New()
 
-	return string(id)
+	return guid
 }

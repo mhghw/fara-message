@@ -9,9 +9,9 @@ import (
 )
 
 type Message struct {
-	ID       int    `json:"id"`
-	SenderID int    `json:"senderID"`
-	ChatID   int    `json:"chatID"`
+	ID       string `json:"id"`
+	SenderID string `json:"senderID"`
+	ChatID   string `json:"chatID"`
 	Content  string `json:"content"`
 }
 

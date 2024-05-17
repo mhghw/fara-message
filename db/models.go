@@ -1,17 +1,19 @@
 package db
 
 import (
+	"crypto/sha1"
 	"database/sql"
-	"log"
-	"strconv"
+	"encoding/hex"
 	"time"
+
+	"github.com/rs/xid"
 )
 
 type Message struct {
 	ID          int
-	UserTableID int
+	UserTableID string
 	UserTable   UserTable
-	ChatTableID int
+	ChatTableID string
 	ChatTable   ChatTable
 	Content     string
 }
@@ -27,7 +29,7 @@ var (
 )
 
 type User struct {
-	ID          string
+	ID          xid.ID
 	Username    string
 	FirstName   string
 	LastName    string
@@ -38,7 +40,7 @@ type User struct {
 	DeletedTime time.Time
 }
 type UserTable struct {
-	ID          int
+	ID          string
 	Username    string
 	FirstName   string
 	LastName    string
@@ -60,23 +62,23 @@ type UserInfo struct {
 }
 
 type Chat struct {
-	ID          int
+	ID          string
 	Name        string
 	CreatedTime time.Time
 	DeletedTime time.Time
 	Type        ChatType
 }
 type ChatTable struct {
-	ID          int
+	ID          string
 	Name        string
 	CreatedTime time.Time
 	DeletedTime time.Time
 	Type        int8
 }
 type ChatMember struct {
-	UserTableID int
+	UserTableID string
 	UserTable   UserTable
-	ChatTableID int
+	ChatTableID string
 	ChatTable   ChatTable
 	JoinedTime  time.Time
 	LeftTime    sql.NullTime
@@ -85,7 +87,7 @@ type ChatType struct {
 	chatType int
 }
 type ChatIDAndChatName struct {
-	ChatID   int
+	ChatID   string
 	ChatName string
 }
 
@@ -101,7 +103,7 @@ var (
 
 func ConvertUserToUserInfo(user User) UserInfo {
 	return UserInfo{
-		ID:          user.ID,
+		ID:          user.ID.String(),
 		Username:    user.Username,
 		FirstName:   user.FirstName,
 		LastName:    user.LastName,
@@ -121,12 +123,8 @@ func ConvertUserToUserTable(user User) UserTable {
 	case 2:
 		gender = 2
 	}
-	userID, err := strconv.Atoi(user.ID)
-	if err != nil {
-		log.Printf("failed to convert user: %v", err)
-	}
 	userTable := UserTable{
-		ID:          userID,
+		ID:          user.ID.String(),
 		Username:    user.Username,
 		FirstName:   user.FirstName,
 		LastName:    user.LastName,
@@ -157,4 +155,12 @@ func ConvertChatToChatTable(chat Chat) ChatTable {
 		Type:        chatType,
 	}
 	return result
+}
+
+func hashDB(input string) string {
+	hasher := sha1.New()
+	hasher.Write([]byte(input))
+	hashedBytes := hasher.Sum(nil)
+	hashedString := hex.EncodeToString(hashedBytes)
+	return hashedString
 }

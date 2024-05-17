@@ -2,7 +2,7 @@ package db
 
 import "fmt"
 
-func (d *Database) SendMessage(senderID int, chatID int, content string) error {
+func (d *Database) SendMessage(senderID string, chatID string, content string) error {
 	var message Message
 	message.UserTableID = senderID
 	message.ChatTableID = chatID
@@ -14,7 +14,7 @@ func (d *Database) SendMessage(senderID int, chatID int, content string) error {
 	return nil
 }
 
-func (d *Database) DeleteMessage(messageID int) error {
+func (d *Database) DeleteMessage(messageID string) error {
 	var message Message
 	result := d.db.Where("ID=?", messageID).Delete(&message)
 	if result.Error != nil {

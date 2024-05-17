@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -46,11 +45,6 @@ func RegisterHandler(c *gin.Context) {
 		log.Print("failed to convert register form to user")
 		return
 	}
-	userID, err := strconv.Atoi(user.ID)
-	if err != nil {
-		log.Printf("failed to convert user ID: %v", err)
-		return
-	}
 	repeatedUserName, err := CheckRepeatedUser(user.Username)
 	if err != nil {
 		log.Printf("failed to check for repeated user: %v", err)
@@ -61,7 +55,7 @@ func RegisterHandler(c *gin.Context) {
 		c.JSON(400, "repeated username")
 		return
 	}
-	token, err := CreateJWTToken(userID)
+	token, err := CreateJWTToken(user.ID.String())
 	if err != nil {
 		log.Print("failed to create token")
 		return
@@ -126,12 +120,13 @@ func convertRegisterFormToUser(form RegisterForm) (db.User, error) {
 
 	gender := assignGender(form.Gender)
 	generatedID := generateID()
+	password := hash(form.Password)
 	user := db.User{
 		ID:          generatedID,
 		Username:    form.Username,
 		FirstName:   form.FirstName,
 		LastName:    form.LastName,
-		Password:    form.Password,
+		Password:    password,
 		Gender:      gender,
 		DateOfBirth: convertTime,
 		CreatedTime: time.Now(),
@@ -158,3 +153,7 @@ func CheckRepeatedUser(username string) (bool, error) {
 	}
 	return result, err
 }
+
+// func generateID() (string, error) {
+
+// }

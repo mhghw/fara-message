@@ -30,8 +30,8 @@ func (d *Database) NewChat(chatName string, chatType ChatType, userTable []UserT
 			log.Printf("Error checking for repeated chat: %v", err)
 			return err
 		}
-		log.Println(chatID)
-		if chatID != 0 {
+
+		if chatID != "" {
 			log.Printf("direct chat already exists: %v", chatID)
 			return nil
 		}
@@ -91,20 +91,41 @@ func (d *Database) GetUsersChatIDAndChatName(chatMember []ChatMember) ([]ChatIDA
 	return result, nil
 }
 
-func (d *Database) CheckRepeatedDirectChat(userTable []UserTable) (int, error) {
-	var userIDs []int
-	for _, user := range userTable {
-		userIDs = append(userIDs, user.ID)
-	}
+// func (d *Database) CheckRepeatedDirectChat(userTable []UserTable) (int, error) {
+// 	var userIDs []int
+// 	for _, user := range userTable {
+// 		userIDs = append(userIDs, user.ID)
+// 	}
+// 	var chatTable ChatTable
+// 	err := d.db.Model(&ChatTable{}).Joins("JOIN chat_members ON chat_tables.id=chat_members.chat_table_id").Where("chat_tables.type=?", 0).Where("chat_members.user_table_id IN ?", userIDs).Find(&chatTable).Error
+// 	if err != nil {
+// 		if errors.Is(err, gorm.ErrRecordNotFound) {
+// 			log.Printf("no direct chat found: %v ", err)
+// 			return 0, nil
+// 		}
+// 		log.Printf("failed to query for repeated direct chat : %v ", err)
+// 		return 0, err
+// 	}
+// 	return chatTable.ID, nil
+// }
+
+func (d *Database) CheckRepeatedDirectChat(userTable []UserTable) (string, error) {
+	var currentID, secondID string
+	currentID = userTable[0].ID
+	secondID = userTable[1].ID
+	chatID := currentID + secondID
+	hashedChatID := hashDB(chatID)
 	var chatTable ChatTable
-	err := d.db.Model(&ChatTable{}).Joins("JOIN chat_members ON chat_tables.id=chat_members.chat_table_id").Where("chat_tables.type=?", 0).Where("chat_members.user_table_id IN ?", userIDs).Find(&chatTable).Error
+	err := d.db.Model(&chatTable).Find(&chatTable.ID).Where("chatID = ?", hashedChatID).Error
+
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			log.Printf("no direct chat found: %v ", err)
-			return 0, nil
+			return "", nil
 		}
 		log.Printf("failed to query for repeated direct chat : %v ", err)
-		return 0, err
+		return "", err
 	}
-	return chatTable.ID, nil
+	return hashedChatID, nil
+
 }

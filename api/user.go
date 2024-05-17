@@ -14,21 +14,21 @@ type UsernameType struct {
 }
 
 func ReadUserHandler(c *gin.Context) {
-	var username UsernameType
-	err := c.BindJSON(&username)
+	authorizationHeader := c.GetHeader("Authorization")
+	userID, err := ValidateToken(authorizationHeader)
 	if err != nil {
-		log.Printf("error binding json: %v", err)
-		c.Status(400)
+		log.Printf("failed to validate token: %v", err)
 		return
 	}
-
-	user, err := db.Mysql.ReadUserByUsername(username.Username)
+	userTable, err := db.Mysql.ReadUser(userID)
 	if err != nil {
-		log.Printf("error reading user:%v", err)
-		c.JSON(400, "error reading user")
+		log.Printf("failed to read user: %v", err)
 		return
 	}
-	c.JSON(http.StatusOK, user)
+	RegisterForm := convertUserTableToRegisterForm(userTable)
+	RegisterForm.Password = ""
+	RegisterForm.ConfirmPassword = ""
+	c.JSON(http.StatusOK, RegisterForm)
 
 }
 

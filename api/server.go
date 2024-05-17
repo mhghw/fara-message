@@ -10,7 +10,7 @@ func RunWebServer(port int) error {
 	addr := fmt.Sprintf(":%d", port)
 	router := gin.New()
 	router.POST("/register", RegisterHandler)
-	router.POST("/login", authenticateUser)
+	router.POST("/login", loginHandler)
 	router.Use(AuthMiddlewareHandler)
 	router.POST("/user/info", ReadUserHandler)
 	router.POST("/change_password", changePassword)

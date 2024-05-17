@@ -1,12 +1,14 @@
 package api
 
 import (
+	"errors"
 	"log"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/goccy/go-json"
 	"github.com/mhghw/fara-message/db"
+	"github.com/rs/xid"
 )
 
 type ChatRequest struct {
@@ -18,7 +20,7 @@ type GroupChatRequest struct {
 	Users    []db.UserTable `json:"users"`
 }
 type DirectChatRequest struct {
-	Users []UsernameType `json:"users"`
+	UserID string `json:"users"`
 }
 
 func NewDirectChatHandler(c *gin.Context) {
@@ -31,36 +33,22 @@ func NewDirectChatHandler(c *gin.Context) {
 	}
 	tokenString := c.GetHeader("Authorization")
 
-	userID, err := ValidateToken(tokenString)
+	hostUserID, err := ValidateToken(tokenString)
 	if err != nil {
 		log.Printf("failed to find user by token: %v", err)
 	}
-	userTable := []db.UserTable{}
-	for _, v := range requestBody.Users {
-		user, err := db.Mysql.ReadUserByUsername(v.Username)
-		if err != nil {
-			log.Printf("failed to read user: %v", err)
-			return
-		}
-		userTable = append(userTable, user)
+	destinationUserTable, err := db.Mysql.ReadUser(requestBody.UserID)
+	if err != nil {
+		log.Printf("failed to read user: %v", err)
 	}
 
-	validUser := false
-	for _, user := range userTable {
-		if user.ID == userID {
-			validUser = true
-		}
+	hostUserTable, err := db.Mysql.ReadUser(hostUserID)
+
+	if err != nil {
+		log.Printf("failed to read user: %v", err)
 	}
-	if !validUser {
-		log.Printf("you're not allowed")
-		c.JSON(400, "Invalid token")
-		return
-	}
-	if len(userTable) == 0 {
-		log.Print("failed to create chat: no users provided")
-		return
-	}
-	log.Println(userTable)
+	var userTable []db.UserTable
+	userTable = append(userTable, hostUserTable, destinationUserTable)
 
 	if err := db.Mysql.NewChat("", db.Direct, userTable); err != nil {
 		log.Print("failed to create chat, ", err)
@@ -151,4 +139,25 @@ func GetUsersChatsHandler(c *gin.Context) {
 		return
 	}
 	c.JSON(200, result)
+}
+
+func DirectChatIDGenerator(users []db.User) (string, error) {
+	var userIDs []xid.ID
+	err := errors.New("too many users provided")
+	for _, user := range users {
+		userIDs = append(userIDs, user.ID)
+	}
+	if len(userIDs) > 2 {
+		log.Println("too many users for direct chat")
+		return "", err
+	}
+	var concatenatedID string
+	if userIDs[0].Compare(userIDs[1]) < 0 {
+		concatenatedID = userIDs[0].String() + userIDs[1].String()
+	} else {
+		concatenatedID = userIDs[1].String() + userIDs[0].String()
+	}
+	hashID := hash(concatenatedID)
+	return hashID, nil
+
 }
