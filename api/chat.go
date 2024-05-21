@@ -20,7 +20,7 @@ type GroupChatRequest struct {
 	Users    []db.UserTable `json:"users"`
 }
 type DirectChatRequest struct {
-	UserID string `json:"users"`
+	UserID string `json:"username"`
 }
 
 func NewDirectChatHandler(c *gin.Context) {
@@ -37,7 +37,7 @@ func NewDirectChatHandler(c *gin.Context) {
 	if err != nil {
 		log.Printf("failed to find user by token: %v", err)
 	}
-	destinationUserTable, err := db.Mysql.ReadUser(requestBody.UserID)
+	destinationUserTable, err := db.Mysql.ReadUserByUsername(requestBody.UserID)
 	if err != nil {
 		log.Printf("failed to read user: %v", err)
 	}
@@ -49,12 +49,13 @@ func NewDirectChatHandler(c *gin.Context) {
 	}
 	var userTable []db.UserTable
 	userTable = append(userTable, hostUserTable, destinationUserTable)
-
-	if err := db.Mysql.NewChat("", db.Direct, userTable); err != nil {
+	chatID, err := db.Mysql.NewChat("", db.Direct, userTable)
+	if err != nil {
 		log.Print("failed to create chat, ", err)
 		return
 	}
 	log.Print("direct chat created")
+	c.JSON(200, chatID)
 }
 
 func NewGroupChatHandler(c *gin.Context) {
@@ -96,10 +97,12 @@ func NewGroupChatHandler(c *gin.Context) {
 		return
 	}
 	log.Println(requestBody.ChatName)
-	if err := db.Mysql.NewChat(requestBody.ChatName, db.Group, userTable); err != nil {
+	chatID, err := db.Mysql.NewChat(requestBody.ChatName, db.Group, userTable)
+	if err != nil {
 		log.Printf("failed to create chat: %v", err)
 		return
 	}
+	c.JSON(200, chatID)
 }
 
 func GetChatMessagesHandler(c *gin.Context) {

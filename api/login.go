@@ -41,7 +41,6 @@ func loginHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, string(errIncorrectUserOrPassJSON))
 		return
 	}
-	log.Println(hash(loginBody.Password))
 	if hash(loginBody.Password) != userUnderReview.Password {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "username or password are incorrect",

@@ -9,14 +9,16 @@ import (
 	"gorm.io/gorm"
 )
 
-func (d *Database) NewChat(chatName string, chatType ChatType, userTable []UserTable) error {
+func (d *Database) NewChat(chatName string, chatType ChatType, userTable []UserTable) (string, error) {
 	name := chatName
 	if chatName == "" {
 		for _, user := range userTable {
-			name += " " + user.Username
+			name += "" + user.Username
 		}
 
 	}
+	chatID := hashDB(chatName)
+
 	chat := Chat{
 		Name:        name,
 		Type:        chatType,
@@ -25,40 +27,40 @@ func (d *Database) NewChat(chatName string, chatType ChatType, userTable []UserT
 	chatTable := ConvertChatToChatTable(chat)
 	if chatType == Direct {
 
-		chatID, err := Mysql.CheckRepeatedDirectChat(userTable)
+		directChatID, err := Mysql.CheckRepeatedDirectChat(userTable)
 		if err != nil {
-			log.Printf("Error checking for repeated chat: %v", err)
-			return err
+			return "", fmt.Errorf("error checking for repeated chat: %v", err)
+
 		}
 
-		if chatID != "" {
-			log.Printf("direct chat already exists: %v", chatID)
-			return nil
+		if directChatID != "" {
+			log.Printf("direct chat already exists: %v", directChatID)
+			return directChatID, nil
+		}
+		chatID, err = chatIDForDirectChat(userTable)
+		if err != nil {
+			return "", fmt.Errorf("error generating chat id for chat: %v", err)
+		}
+		chatTable.ID = chatID
+		d.db.Create(&chatTable)
+		if err := d.generateChatMemberForChat(userTable, chatTable); err != nil {
+			return "", fmt.Errorf("error generating chat member for chat : %v", err)
+		}
+
+		if err != nil {
+			return "", fmt.Errorf("error generating ID for direct chat : %v", err)
+		}
+	}
+	if chatType == Group {
+
+		chatTable.ID = chatID
+		d.db.Create(&chatTable)
+		if err := d.generateChatMemberForChat(userTable, chatTable); err != nil {
+			return "", fmt.Errorf("error generating chat member for chat : %v", err)
 		}
 	}
 
-	d.db.Create(&chatTable)
-	var chatMembers []ChatMember
-	for _, u := range userTable {
-
-		chatMember := ChatMember{
-			UserTable:   u,
-			ChatTable:   chatTable,
-			JoinedTime:  time.Now(),
-			ChatTableID: chatTable.ID,
-			UserTableID: u.ID,
-		}
-		chatMembers = append(chatMembers, chatMember)
-		// log.Println("List of chatMembers", chatMembers)
-
-	}
-	if err := d.db.Create(&chatMembers).Error; err != nil {
-
-		return fmt.Errorf("cannot create chat member: %w", err)
-
-	}
-
-	return nil
+	return chatID, nil
 }
 
 func (d *Database) GetChatMessages(ChatID int64) ([]Message, error) {
@@ -91,32 +93,15 @@ func (d *Database) GetUsersChatIDAndChatName(chatMember []ChatMember) ([]ChatIDA
 	return result, nil
 }
 
-// func (d *Database) CheckRepeatedDirectChat(userTable []UserTable) (int, error) {
-// 	var userIDs []int
-// 	for _, user := range userTable {
-// 		userIDs = append(userIDs, user.ID)
-// 	}
-// 	var chatTable ChatTable
-// 	err := d.db.Model(&ChatTable{}).Joins("JOIN chat_members ON chat_tables.id=chat_members.chat_table_id").Where("chat_tables.type=?", 0).Where("chat_members.user_table_id IN ?", userIDs).Find(&chatTable).Error
-// 	if err != nil {
-// 		if errors.Is(err, gorm.ErrRecordNotFound) {
-// 			log.Printf("no direct chat found: %v ", err)
-// 			return 0, nil
-// 		}
-// 		log.Printf("failed to query for repeated direct chat : %v ", err)
-// 		return 0, err
-// 	}
-// 	return chatTable.ID, nil
-// }
-
 func (d *Database) CheckRepeatedDirectChat(userTable []UserTable) (string, error) {
-	var currentID, secondID string
-	currentID = userTable[0].ID
-	secondID = userTable[1].ID
-	chatID := currentID + secondID
-	hashedChatID := hashDB(chatID)
+
+	hashedChatID, err := chatIDForDirectChat(userTable)
+	if err != nil {
+		log.Print(err)
+		return "", err
+	}
 	var chatTable ChatTable
-	err := d.db.Model(&chatTable).Find(&chatTable.ID).Where("chatID = ?", hashedChatID).Error
+	err = d.db.Model(&chatTable).Where("id = ?", hashedChatID).First(&chatTable).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -126,6 +111,41 @@ func (d *Database) CheckRepeatedDirectChat(userTable []UserTable) (string, error
 		log.Printf("failed to query for repeated direct chat : %v ", err)
 		return "", err
 	}
+	return chatTable.ID, nil
+
+}
+
+func chatIDForDirectChat(userTable []UserTable) (string, error) {
+	if len(userTable) != 2 {
+		return "", errors.New("wrong number of users")
+	}
+	currentID := userTable[0].ID
+	secondID := userTable[1].ID
+	chatID := currentID + secondID
+	hashedChatID := hashDB(chatID)
 	return hashedChatID, nil
+
+}
+
+func (d *Database) generateChatMemberForChat(userTable []UserTable, chatTable ChatTable) error {
+	var chatMembers []ChatMember
+	for _, u := range userTable {
+
+		chatMember := ChatMember{
+			UserTable:   u,
+			ChatTable:   chatTable,
+			JoinedTime:  time.Now(),
+			ChatTableID: chatTable.ID,
+			UserTableID: u.ID,
+		}
+		chatMembers = append(chatMembers, chatMember)
+
+	}
+	if err := d.db.Create(&chatMembers).Error; err != nil {
+
+		return fmt.Errorf("cannot create chat member: %w", err)
+
+	}
+	return nil
 
 }

@@ -24,7 +24,7 @@ func (d *Database) ReadUserByUsername(username string) (UserTable, error) {
 
 func (d *Database) ReadUser(ID string) (UserTable, error) {
 	var user UserTable
-	result := d.db.First(&user, "ID=?", ID)
+	result := d.db.First(&user, "ID = ?", ID)
 	if result.Error != nil {
 		return user, fmt.Errorf("failed to read user: %w", result.Error)
 	}

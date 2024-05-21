@@ -14,9 +14,9 @@ import (
 var port = flag.Int("port", 8080, "Port to run the HTTP server")
 
 func main() {
+	db.NewDatabase()
 	guid := xid.New()
 	fmt.Println(guid.String())
-	db.NewDatabase()
 	flag.Parse()
 	err := api.RunWebServer(*port)
 	if err != nil {

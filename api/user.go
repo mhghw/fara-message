@@ -20,6 +20,7 @@ func ReadUserHandler(c *gin.Context) {
 		log.Printf("failed to validate token: %v", err)
 		return
 	}
+	log.Println(userID)
 	userTable, err := db.Mysql.ReadUser(userID)
 	if err != nil {
 		log.Printf("failed to read user: %v", err)
@@ -47,10 +48,6 @@ func UpdateUserHandler(c *gin.Context) {
 		c.JSON(400, "error reading user")
 		return
 	}
-
-	fmt.Println(userID)
-	fmt.Println(oldUser)
-
 	oldUserRegisterForm := convertUserTableToRegisterForm(oldUser)
 	var newInfoRequest RegisterForm
 	err = c.BindJSON(&newInfoRequest)

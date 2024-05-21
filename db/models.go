@@ -11,9 +11,9 @@ import (
 
 type Message struct {
 	ID          int
-	UserTableID string
+	UserTableID string `gorm:"type:varchar(255)"`
 	UserTable   UserTable
-	ChatTableID string
+	ChatTableID string `gorm:"type:varchar(255)"`
 	ChatTable   ChatTable
 	Content     string
 }
@@ -40,7 +40,7 @@ type User struct {
 	DeletedTime time.Time
 }
 type UserTable struct {
-	ID          string
+	ID          string `gorm:"type:varchar(255)"`
 	Username    string
 	FirstName   string
 	LastName    string
@@ -69,20 +69,21 @@ type Chat struct {
 	Type        ChatType
 }
 type ChatTable struct {
-	ID          string
+	ID          string `gorm:"type:varchar(255)"`
 	Name        string
 	CreatedTime time.Time
-	DeletedTime time.Time
+	DeletedTime sql.NullTime
 	Type        int8
 }
 type ChatMember struct {
-	UserTableID string
+	UserTableID string `gorm:"type:varchar(255)"`
 	UserTable   UserTable
-	ChatTableID string
+	ChatTableID string `gorm:"type:varchar(255)"`
 	ChatTable   ChatTable
 	JoinedTime  time.Time
 	LeftTime    sql.NullTime
 }
+
 type ChatType struct {
 	chatType int
 }
@@ -151,7 +152,6 @@ func ConvertChatToChatTable(chat Chat) ChatTable {
 		ID:          chat.ID,
 		Name:        chat.Name,
 		CreatedTime: chat.CreatedTime,
-		DeletedTime: time.Date(1, time.January, 1, 1, 1, 1, 0, time.UTC),
 		Type:        chatType,
 	}
 	return result
