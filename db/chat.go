@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/rs/xid"
 	"gorm.io/gorm"
 )
 
@@ -37,7 +38,7 @@ func (d *Database) NewChat(chatName string, chatType ChatType, userTable []UserT
 			log.Printf("direct chat already exists: %v", directChatID)
 			return directChatID, nil
 		}
-		chatID, err = chatIDForDirectChat(userTable)
+		chatID, err = generateChatIDForDirectChat(userTable)
 		if err != nil {
 			return "", fmt.Errorf("error generating chat id for chat: %v", err)
 		}
@@ -52,7 +53,8 @@ func (d *Database) NewChat(chatName string, chatType ChatType, userTable []UserT
 		}
 	}
 	if chatType == Group {
-
+		guid := xid.New()
+		chatID = hashDB(guid.String())
 		chatTable.ID = chatID
 		d.db.Create(&chatTable)
 		if err := d.generateChatMemberForChat(userTable, chatTable); err != nil {
@@ -63,21 +65,23 @@ func (d *Database) NewChat(chatName string, chatType ChatType, userTable []UserT
 	return chatID, nil
 }
 
-func (d *Database) GetChatMessages(ChatID int64) ([]Message, error) {
+func (d *Database) GetChatMessages(ChatID string) ([]Message, error) {
 	var messages []Message
-	if err := d.db.Where("chat_id = ?", ChatID).Find(&messages).Error; err != nil {
+	if err := d.db.Where("chat_table_id = ?", ChatID).Find(&messages).Error; err != nil {
 		return nil, fmt.Errorf("no  message found for chat %w", err)
 	}
 	return messages, nil
 }
 
-func (d *Database) GetUsersChatMembers(userID int) ([]ChatMember, error) {
-	var usersChatMembers []ChatMember
-	if err := d.db.Where("user_id = ?", userID).Find(&usersChatMembers).Error; err != nil {
+func (d *Database) GetUsersChatMembers(userID string) ([]ChatMember, error) {
+	var userChatMembers []ChatMember
+	if err := d.db.Where("user_table_id = ?", userID).Find(&userChatMembers).Error; err != nil {
 		return nil, fmt.Errorf("no  chat found for user %w", err)
 	}
-	return usersChatMembers, nil
+	return userChatMembers, nil
 }
+
+// func (d *Database) GetUsersChatTables(userChatMembers string) ([]ChatMember, error) {
 
 func (d *Database) GetUsersChatIDAndChatName(chatMember []ChatMember) ([]ChatIDAndChatName, error) {
 	var result []ChatIDAndChatName
@@ -95,7 +99,7 @@ func (d *Database) GetUsersChatIDAndChatName(chatMember []ChatMember) ([]ChatIDA
 
 func (d *Database) CheckRepeatedDirectChat(userTable []UserTable) (string, error) {
 
-	hashedChatID, err := chatIDForDirectChat(userTable)
+	hashedChatID, err := generateChatIDForDirectChat(userTable)
 	if err != nil {
 		log.Print(err)
 		return "", err
@@ -115,7 +119,7 @@ func (d *Database) CheckRepeatedDirectChat(userTable []UserTable) (string, error
 
 }
 
-func chatIDForDirectChat(userTable []UserTable) (string, error) {
+func generateChatIDForDirectChat(userTable []UserTable) (string, error) {
 	if len(userTable) != 2 {
 		return "", errors.New("wrong number of users")
 	}

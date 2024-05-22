@@ -14,7 +14,7 @@ func (d *Database) SendMessage(senderID string, chatID string, content string) e
 	return nil
 }
 
-func (d *Database) DeleteMessage(messageID string) error {
+func (d *Database) DeleteMessage(messageID int) error {
 	var message Message
 	result := d.db.Where("ID=?", messageID).Delete(&message)
 	if result.Error != nil {
