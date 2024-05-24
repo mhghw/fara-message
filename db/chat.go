@@ -118,14 +118,32 @@ func (d *Database) CheckRepeatedDirectChat(userTable []UserTable) (string, error
 	return chatTable.ID, nil
 
 }
-
 func generateChatIDForDirectChat(userTable []UserTable) (string, error) {
 	if len(userTable) != 2 {
 		return "", errors.New("wrong number of users")
 	}
-	currentID := userTable[0].ID
-	secondID := userTable[1].ID
-	chatID := currentID + secondID
+	firstXID, err := xid.FromString(userTable[0].ID)
+	if err != nil {
+		log.Printf("failed to generate xid from string")
+		return "", err
+	}
+
+	secondXID, err := xid.FromString(userTable[1].ID)
+	if err != nil {
+		log.Printf("failed to generate xid from string")
+		return "", err
+	}
+	var smallID, bigID string
+	if firstXID.Compare(secondXID) == 1 {
+		bigID = userTable[0].ID
+		smallID = userTable[1].ID
+	} else if firstXID.Compare(secondXID) == -1 {
+		smallID = userTable[0].ID
+		bigID = userTable[1].ID
+	} else {
+		return "", errors.New("two ids are the same")
+	}
+	chatID := smallID + bigID
 	hashedChatID := hashDB(chatID)
 	return hashedChatID, nil
 
