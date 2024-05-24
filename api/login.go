@@ -14,7 +14,7 @@ type loginBody struct {
 	Password string `json:"password"`
 }
 
-func authenticateUser(c *gin.Context) {
+func loginHandler(c *gin.Context) {
 	var loginBody loginBody
 	err := c.BindJSON(&loginBody)
 	if err != nil {
@@ -41,10 +41,11 @@ func authenticateUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, string(errIncorrectUserOrPassJSON))
 		return
 	}
-	if hash(loginBody.Password) == userUnderReview.Password {
+	if hash(loginBody.Password) != userUnderReview.Password {
 		c.JSON(http.StatusOK, gin.H{
-			"message": "username and password are correct",
+			"message": "username or password are incorrect",
 		})
+		return
 	}
 
 	token, err := CreateJWTToken(userUnderReview.ID)
@@ -52,12 +53,6 @@ func authenticateUser(c *gin.Context) {
 		log.Printf("failed to create token: %v", err)
 		return
 	}
-
-	// userTokenJSON, err := json.Marshal(userToken)
-	// if err != nil {
-	// 	log.Print("failed to marshal token")
-	// 	return
-	// }
 
 	c.JSON(http.StatusOK, token)
 }

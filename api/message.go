@@ -9,10 +9,8 @@ import (
 )
 
 type Message struct {
-	ID       int    `json:"id"`
-	SenderID int    `json:"senderID"`
-	ChatID   int    `json:"chatID"`
-	Content  string `json:"content"`
+	ChatID  string `json:"chatID"`
+	Content string `json:"content"`
 }
 
 func SendMessageHandler(c *gin.Context) {
@@ -24,13 +22,6 @@ func SendMessageHandler(c *gin.Context) {
 	}
 
 	authorizationHeader := c.GetHeader("Authorization")
-	if authorizationHeader == "" {
-		log.Print("failed to get authorization token")
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unauthorized",
-		})
-		return
-	}
 	userID, err := ValidateToken(authorizationHeader)
 	if err != nil {
 		log.Printf("error get ID:%v", err)
@@ -38,9 +29,7 @@ func SendMessageHandler(c *gin.Context) {
 		return
 	}
 
-	message.SenderID = userID
-
-	err = db.Mysql.SendMessage(message.SenderID, message.ChatID, message.Content)
+	err = db.Mysql.SendMessage(userID, message.ChatID, message.Content)
 	if err != nil {
 		log.Printf("error:%v", err)
 		c.Status(400)
@@ -52,7 +41,7 @@ func SendMessageHandler(c *gin.Context) {
 }
 
 func DeleteMessageHandler(c *gin.Context) {
-	var message Message
+	var message db.Message
 	if err := c.BindJSON(&message.ID); err != nil {
 		log.Printf("error binding JSON:%v", err)
 	}

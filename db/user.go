@@ -22,16 +22,16 @@ func (d *Database) ReadUserByUsername(username string) (UserTable, error) {
 	return user, nil
 }
 
-func (d *Database) ReadUser(ID int) (UserTable, error) {
+func (d *Database) ReadUser(ID string) (UserTable, error) {
 	var user UserTable
-	result := d.db.First(&user, "ID=?", ID)
+	result := d.db.First(&user, "ID = ?", ID)
 	if result.Error != nil {
 		return user, fmt.Errorf("failed to read user: %w", result.Error)
 	}
 	return user, nil
 }
 
-func (d *Database) UpdateUser(ID int, newInfo UserTable) error {
+func (d *Database) UpdateUser(ID string, newInfo UserTable) error {
 
 	result := d.db.Model(&UserTable{}).Where("ID=?", ID).Updates(UserTable{Username: newInfo.Username, FirstName: newInfo.FirstName, LastName: newInfo.LastName, Password: newInfo.Password, Gender: newInfo.Gender, DateOfBirth: newInfo.DateOfBirth})
 	if result.Error != nil {
@@ -40,7 +40,7 @@ func (d *Database) UpdateUser(ID int, newInfo UserTable) error {
 	return nil
 }
 
-func (d *Database) DeleteUser(ID int) error {
+func (d *Database) DeleteUser(ID string) error {
 	var user UserTable
 	result := d.db.First(&user, "ID=?", ID)
 	if result.Error != nil {

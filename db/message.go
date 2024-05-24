@@ -2,7 +2,7 @@ package db
 
 import "fmt"
 
-func (d *Database) SendMessage(senderID int, chatID int, content string) error {
+func (d *Database) SendMessage(senderID string, chatID string, content string) error {
 	var message Message
 	message.UserTableID = senderID
 	message.ChatTableID = chatID
